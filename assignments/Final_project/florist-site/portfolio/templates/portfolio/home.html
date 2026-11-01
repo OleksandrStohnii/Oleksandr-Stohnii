@@ -4,107 +4,165 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Zolotaya — квіти та декор</title>
-    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <title>Zolotaya — beauty in details</title>
+    <link rel="icon" href="{% static 'portfolio/logo.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink: #213A63; --mocha: #A07D72; --mocha-dark: #8A6A60;
-            --lilac: #E9E1E6; --paper: #F8F4F3; --muted: #5B6B85;
+            --mocha: #9C7A6B; --mocha-dark: #7D5F52; --navy: #1E2A4A;
+            --sand: #E6D5BE; --blush: #EAD7CD; --milk: #F7F1EA; --choc: #3A2723;
+            --muted: #5E6578; --rose: #D9A79A; --sage: #9DB09A;
         }
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Inter', Arial, sans-serif; }
+        body { margin: 0; background: var(--milk); color: var(--navy); font-family: 'Inter', Arial, sans-serif; font-weight: 300; }
         a { color: inherit; text-decoration: none; }
         .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
         h1, h2, h3, .logo, .cat, .num { font-family: 'Jost', 'Inter', Arial, sans-serif; font-weight: 400; }
 
         /* Навігація */
-        .topbar { position: sticky; top: 0; z-index: 10; background: rgba(248,244,243,.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--lilac); }
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; }
-        .logo { font-size: 24px; font-weight: 500; letter-spacing: .32em; text-transform: uppercase; color: var(--mocha); }
-        .nav-links { display: flex; align-items: center; gap: 28px; font-size: 15px; }
+        .topbar { position: sticky; top: 0; z-index: 10; background: rgba(247,241,234,.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--sand); }
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+        .logo img { display: block; height: 56px; width: 56px; }
+        .nav-links { display: flex; align-items: center; gap: 28px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
         .nav-links > a:not(.btn):hover { color: var(--mocha); }
 
         /* Кнопки */
-        .btn { display: inline-block; background: var(--mocha); color: #fff; padding: 16px 32px; border-radius: 999px; font-size: 13px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; text-align: center; box-shadow: 0 8px 22px rgba(160,125,114,.3); transition: transform .2s, background .2s; }
+        .btn { display: inline-block; background: var(--mocha); color: #fff; padding: 16px 32px; border-radius: 999px; font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; text-align: center; box-shadow: 0 8px 22px rgba(156,122,107,.3); transition: transform .2s, background .2s; }
         .btn:hover { background: var(--mocha-dark); transform: translateY(-2px); }
         .btn-small { padding: 11px 22px; box-shadow: none; }
-        .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--ink); box-shadow: none; padding: 15px 30px; }
-        .btn-ghost:hover { background: var(--ink); color: #fff; }
+        .btn-ghost { background: transparent; color: var(--navy); border: 1px solid var(--navy); box-shadow: none; padding: 15px 30px; }
+        .btn-ghost:hover { background: var(--navy); color: #fff; }
 
         /* Головний екран */
-        .hero-bg { background: linear-gradient(135deg, #EFE6E8 0%, #F8F4F3 60%, #E4E9F2 100%); }
-        .hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; padding: 64px 0 76px; }
-        .hero h1 { font-size: 46px; line-height: 1.15; letter-spacing: .05em; text-transform: uppercase; margin: 0 0 20px; }
-        .hero p { font-size: 18px; line-height: 1.7; color: var(--muted); margin: 0 0 32px; max-width: 520px; }
+        .hero-bg { position: relative; overflow: hidden; background: linear-gradient(135deg, var(--blush) 0%, var(--milk) 62%); }
+        #petals { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        .hero { position: relative; display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; padding: 64px 0 84px; }
+        .tagline { font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: .38em; color: var(--mocha); margin: 0 0 18px; display: flex; align-items: center; gap: 14px; }
+        .tagline::before { content: ""; width: 36px; height: 1px; background: var(--mocha); }
+        .hero h1 { font-size: 46px; line-height: 1.14; font-weight: 300; letter-spacing: .07em; text-transform: uppercase; margin: 0 0 20px; }
+        .hero p.lead { font-size: 18px; line-height: 1.7; color: var(--muted); margin: 0 0 32px; max-width: 520px; }
         .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
         .hero-photo { position: relative; max-width: 420px; width: 100%; margin-left: auto; }
-        .hero-photo::before { content: ""; position: absolute; inset: -16px; background: var(--lilac); border-radius: 999px 999px 28px 28px; }
-        .hero-photo::after { content: ""; position: absolute; inset: -16px; border: 1px solid var(--mocha); border-radius: 999px 999px 28px 28px; transform: scale(1.04); }
+        .hero-photo::before { content: ""; position: absolute; inset: -16px; background: var(--sand); border-radius: 999px 999px 28px 28px; }
+        .hero-photo::after { content: ""; position: absolute; inset: -16px; border: 1px solid var(--mocha); border-radius: 999px 999px 28px 28px; transform: scale(1.045); }
         .hero-img { position: relative; z-index: 1; display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: center top; border-radius: 999px 999px 24px 24px; }
 
-        /* Заголовки секцій */
+        /* Смуга */
+        .band { background: var(--navy); color: var(--sand); text-align: center; padding: 16px 12px; font-family: 'Jost', sans-serif; font-size: 12px; letter-spacing: .5em; text-transform: uppercase; }
+        .band span { margin: 0 12px; }
+
+        /* Секції */
         section { padding: 28px 0; }
-        .title { font-size: 32px; line-height: 1.2; letter-spacing: .1em; text-transform: uppercase; margin: 40px 0 14px; }
+        .title { font-size: 28px; line-height: 1.2; font-weight: 300; letter-spacing: .18em; text-transform: uppercase; margin: 40px 0 14px; }
         .title::after { content: ""; display: block; width: 56px; height: 1px; background: var(--mocha); margin-top: 14px; }
-        .sub { color: var(--muted); margin: 0 0 28px; font-size: 17px; line-height: 1.6; }
+        .sub { color: var(--muted); margin: 0 0 28px; font-size: 16px; line-height: 1.6; }
 
         /* Категорії */
         .cats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
-        .cat { display: flex; align-items: center; min-height: 130px; padding: 36px 22px; border: 1px solid rgba(33,58,99,.08); border-radius: 20px; font-size: 17px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; line-height: 1.3; transition: transform .2s, box-shadow .2s; }
-        .cat:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(33,58,99,.08); }
-        .k1 { background: #EBDDD8; } .k2 { background: #E9E1E6; } .k3 { background: #DCE3EF; } .k4 { background: #F1E7E2; }
-        .cat.active { outline: 2px solid var(--mocha); outline-offset: 2px; }
+        .cat { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 190px; padding: 24px 22px; border-radius: 22px; font-size: 14px; letter-spacing: .16em; text-transform: uppercase; line-height: 1.4; transition: transform .25s, box-shadow .25s; }
+        .cat:hover { transform: translateY(-6px); box-shadow: 0 16px 30px rgba(30,42,74,.18); }
+        .cat::after { content: "→"; position: absolute; right: 20px; bottom: 18px; font-size: 20px; opacity: .6; transition: transform .25s; }
+        .cat:hover::after { transform: translateX(5px); }
+        .cat-ic { display: none; width: 52px; height: 52px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+        .c-wed { background: linear-gradient(135deg, #F6E3D9, #EBC7BA); color: var(--choc); }
+        .c-ven { background: linear-gradient(135deg, #1E2A4A, #35477A); color: var(--sand); }
+        .c-hal { background: linear-gradient(135deg, #3A2723, #70493A); color: #F2D9B8; }
+        .c-ny  { background: linear-gradient(135deg, #8C6C60, #BC9686); color: #fff; }
+        .c-def { background: var(--sand); color: var(--choc); }
+        .c-wed .i-wed, .c-ven .i-ven, .c-hal .i-hal, .c-ny .i-ny { display: block; }
+        .cat.active { outline: 2px solid var(--navy); outline-offset: 3px; }
 
         /* Як це працює */
-        .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-        .step { background: #fff; border: 1px solid var(--lilac); border-radius: 20px; padding: 28px; }
-        .num { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--mocha); color: var(--mocha); font-size: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
-        .step h3 { margin: 0 0 8px; font-size: 20px; font-weight: 500; }
-        .step p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 15px; }
+        .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+        .step { position: relative; background: #fff; border-radius: 22px; padding: 28px 24px 26px; border-top: 5px solid var(--rose); box-shadow: 0 10px 28px rgba(30,42,74,.06); transition: transform .25s; }
+        .step:hover { transform: translateY(-4px); }
+        .s1 { border-top-color: var(--rose); background: linear-gradient(180deg, #FBEDE7, #fff 55%); }
+        .s2 { border-top-color: var(--sand); background: linear-gradient(180deg, #F6ECDD, #fff 55%); }
+        .s3 { border-top-color: var(--sage); background: linear-gradient(180deg, #EAF0E7, #fff 55%); }
+        .s4 { border-top-color: var(--navy); background: linear-gradient(180deg, #E4E8F1, #fff 55%); }
+        .num { width: 48px; height: 48px; border-radius: 50%; color: #fff; font-size: 21px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+        .s1 .num { background: var(--rose); } .s2 .num { background: #C9A678; } .s3 .num { background: var(--sage); } .s4 .num { background: var(--navy); }
+        .step h3 { margin: 0 0 8px; font-size: 18px; font-weight: 500; letter-spacing: .05em; }
+        .step p { margin: 0; color: var(--muted); line-height: 1.65; font-size: 14.5px; }
+        .step .hint { display: inline-block; margin-top: 12px; font-family: 'Jost', sans-serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--mocha-dark); }
 
         /* Роботи */
         .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
-        .card { background: #fff; border: 1px solid var(--lilac); border-radius: 22px; overflow: hidden; box-shadow: 0 10px 30px rgba(33,58,99,.05); transition: transform .2s, box-shadow .2s; }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(33,58,99,.09); }
-        .card-img { display: block; width: 100%; height: 300px; object-fit: cover; object-position: center top; background: var(--lilac); }
+        .card { background: #fff; border: 1px solid var(--sand); border-radius: 22px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,42,74,.05); transition: transform .2s, box-shadow .2s; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(30,42,74,.12); }
+        .card-img { display: block; width: 100%; height: 300px; object-fit: cover; object-position: center top; background: var(--sand); }
+        img.card-img { cursor: zoom-in; }
         .card-body { padding: 20px 20px 24px; }
-        .card h3 { margin: 0 0 8px; font-size: 20px; font-weight: 500; }
-        .tag { color: var(--mocha); letter-spacing: .06em; text-transform: uppercase; font-size: 12px; font-weight: 500; }
+        .card h3 { margin: 0 0 8px; font-size: 18px; font-weight: 500; letter-spacing: .04em; }
+        .tag { color: var(--mocha); letter-spacing: .18em; text-transform: uppercase; font-size: 11px; font-weight: 500; }
         .card p { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 12px 0 0; }
+        .more { margin-top: 32px; text-align: center; }
 
-        /* Заклик до дії */
-        .cta { background: linear-gradient(135deg, #213A63, #34527F); color: #fff; border-radius: 30px; padding: 64px 24px; text-align: center; margin: 72px 0 32px; }
-        .cta h2 { font-size: 38px; line-height: 1.2; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 14px; }
-        .cta p { margin: 0 0 30px; font-size: 18px; line-height: 1.6; }
-        .cta .btn { background: var(--paper); color: var(--ink); box-shadow: none; }
-        .cta .btn:hover { background: var(--lilac); }
+        /* Синій блок */
+        .cta { background: linear-gradient(135deg, #1E2A4A, #34477A); color: #fff; border-radius: 30px; padding: 76px 24px; text-align: center; margin: 64px 0 24px; }
+        .cta h2 { font-size: 32px; font-weight: 300; line-height: 1.25; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 14px; }
+        .cta p { margin: 0 0 30px; font-size: 17px; line-height: 1.6; color: var(--sand); }
+        .cta .btn { background: var(--sand); color: var(--navy); box-shadow: none; }
+        .cta .btn:hover { background: #fff; }
 
         /* Контакти */
-        .contacts { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 24px; }
-        .contact { display: inline-block; padding: 14px 26px; border: 1px solid var(--mocha); border-radius: 999px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; transition: background .2s, color .2s; }
-        .contact:hover { background: var(--mocha); color: #fff; }
+        .contacts-block { background: linear-gradient(135deg, #9C7A6B, #B58F80); color: #fff; border-radius: 30px; padding: 24px 40px 52px; margin: 24px 0 0; }
+        .contacts-block .title::after { background: var(--blush); }
+        .contacts-block .sub { color: #F6E9E0; }
+        .contacts { display: flex; flex-wrap: wrap; gap: 14px; }
+        .contact { display: inline-block; padding: 14px 26px; border: 1px solid var(--blush); border-radius: 999px; font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; transition: background .2s, color .2s; }
+        .contact:hover { background: var(--milk); color: var(--mocha-dark); }
 
-        footer { padding: 24px 0 48px; color: var(--muted); font-size: 14px; text-align: center; }
+        /* Підвал */
+        footer { background: var(--choc); color: var(--sand); margin-top: 64px; padding: 52px 0 44px; text-align: center; }
+        .foot-logo { display: block; width: 130px; height: 130px; margin: 0 auto 18px; }
+        footer .slogan { font-family: 'Jost', sans-serif; font-size: 12px; letter-spacing: .3em; color: var(--blush); opacity: .85; }
         .mobile-cta { display: none; }
 
-        /* Телефони та планшети */
+        /* Анімація появи */
+        .reveal { opacity: 0; transform: translateY(26px); transition: opacity .8s ease, transform .8s ease; }
+        .reveal.in { opacity: 1; transform: none; }
+
+        /* Перегляд фото */
+        .lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(30,42,74,.94); display: none; align-items: center; justify-content: center; padding: 24px; }
+        .lightbox.open { display: flex; }
+        .lightbox img { max-width: 92vw; max-height: 84vh; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+        .lb-btn, .lb-close { position: absolute; width: 50px; height: 50px; border-radius: 50%; border: 1px solid rgba(230,213,190,.6); background: transparent; color: #E6D5BE; font-size: 24px; cursor: pointer; transition: background .2s; }
+        .lb-btn:hover, .lb-close:hover { background: rgba(230,213,190,.15); }
+        .lb-btn { top: 50%; margin-top: -25px; }
+        .lb-prev { left: 20px; } .lb-next { right: 20px; }
+        .lb-close { top: 20px; right: 20px; }
+        .lb-cap { position: absolute; bottom: 22px; left: 0; right: 0; text-align: center; color: #E6D5BE; font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: .2em; text-transform: uppercase; }
+        @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+        /* Планшети */
+        @media (max-width: 1000px) {
+            .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        /* Телефони */
         @media (max-width: 800px) {
             .container { padding-left: 20px; padding-right: 20px; }
-            .hero { grid-template-columns: 1fr; padding: 36px 0 52px; gap: 44px; }
+            .hero { grid-template-columns: 1fr; padding: 36px 0 60px; gap: 52px; }
             .hero h1 { font-size: 30px; }
-            .hero p { font-size: 16px; }
+            .hero p.lead { font-size: 16px; }
             .hero-photo { margin: 0 auto; max-width: 300px; }
             .nav-links { gap: 12px; }
             .nav-links a:not(.btn) { display: none; }
-            .logo { font-size: 20px; }
-            .title { font-size: 26px; }
-            .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-            .cat { padding: 24px 16px; min-height: 100px; font-size: 14px; }
+            .logo img { height: 46px; width: 46px; }
+            .band { letter-spacing: .3em; font-size: 11px; }
+            .title { font-size: 22px; }
+            .cats { gap: 12px; }
+            .cat { min-height: 150px; padding: 18px 16px; font-size: 12px; }
+            .cat-ic { width: 42px; height: 42px; }
             .steps, .grid { grid-template-columns: 1fr; }
             .card-img { height: 280px; }
-            .cta { padding: 44px 20px; margin-top: 48px; }
-            .cta h2 { font-size: 26px; }
+            .cta { padding: 60px 20px; margin-top: 48px; }
+            .cta h2 { font-size: 22px; }
+            .contacts-block { padding: 12px 20px 40px; }
+            .foot-logo { width: 110px; height: 110px; }
+            .lb-prev { left: 8px; } .lb-next { right: 8px; }
             body { padding-bottom: 84px; }
             .mobile-cta { display: block; position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 20; }
         }
@@ -115,9 +173,31 @@
 </head>
 <body>
 
+    <!-- Іконки напрямів -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="ic-wed" viewBox="0 0 48 48">
+            <circle cx="17" cy="30" r="11"/><circle cx="31" cy="30" r="11"/>
+            <path d="M24 5 l4.5 5.5 L24 16 l-4.5-5.5z"/>
+        </symbol>
+        <symbol id="ic-ven" viewBox="0 0 48 48">
+            <path d="M6 17 L10 7 H38 L42 17"/>
+            <path d="M6 17 q4.5 8 9 0 q4.5 8 9 0 q4.5 8 9 0 q4.5 8 9 0"/>
+            <path d="M9 25 V41 H39 V25"/><rect x="20" y="30" width="8" height="11"/>
+        </symbol>
+        <symbol id="ic-hal" viewBox="0 0 48 48">
+            <ellipse cx="24" cy="30" rx="17" ry="12.5"/>
+            <path d="M24 17.5 q0-7 6-9"/>
+            <path d="M16 21 q-5 9 0 18 M32 21 q5 9 0 18 M24 18 V42"/>
+        </symbol>
+        <symbol id="ic-ny" viewBox="0 0 48 48">
+            <path d="M24 5 V43 M7.5 14.5 L40.5 33.5 M7.5 33.5 L40.5 14.5"/>
+            <path d="M19 9 L24 14 L29 9 M19 39 L24 34 L29 39"/>
+        </symbol>
+    </svg>
+
     <div class="topbar">
         <div class="container nav">
-            <a class="logo" href="/">Zolotaya</a>
+            <a class="logo" href="/"><img src="{% static 'portfolio/logo.png' %}" alt="Zolotaya"></a>
             <div class="nav-links">
                 <a href="#works">Каталог</a>
                 <a href="#how">Як це працює</a>
@@ -128,10 +208,12 @@
     </div>
 
     <div class="hero-bg">
+        <canvas id="petals" aria-hidden="true"></canvas>
         <div class="container hero">
             <div>
+                <p class="tagline">beauty in details</p>
                 <h1>Квіти та декор для ваших найважливіших днів</h1>
-                <p>Весілля, оформлення закладів, Гелловін і Новий рік. Розкажіть про свою подію, і я домовлюся з вами про деталі та вартість.</p>
+                <p class="lead">Весілля, оформлення закладів, Гелловін і Новий рік. Розкажіть про свою подію, і я домовлюся з вами про деталі та вартість.</p>
                 <div class="hero-actions">
                     <a class="btn" href="{% url 'order_create' %}">Залишити заявку</a>
                     <a class="btn btn-ghost" href="#works">Дивитись роботи</a>
@@ -143,14 +225,22 @@
         </div>
     </div>
 
+    <div class="band"><span>Natural</span>·<span>Modern</span>·<span>You</span></div>
+
     <div class="container">
 
         <section id="categories">
             <h2 class="title">Що я оформлюю</h2>
-            <p class="sub">Оберіть напрям, який вам потрібен.</p>
+            <p class="sub">Оберіть напрям, щоб побачити роботи саме з цієї категорії.</p>
             <div class="cats">
                 {% for category in categories %}
-                    <a class="cat {% cycle 'k1' 'k2' 'k3' 'k4' %}{% if current.id == category.id %} active{% endif %}" href="{% url 'category' category.id %}#works">{{ category.name }}</a>
+                    <a class="cat {% if 'Весіл' in category.name %}c-wed{% elif 'закл' in category.name %}c-ven{% elif 'Гел' in category.name %}c-hal{% elif 'Нов' in category.name %}c-ny{% else %}c-def{% endif %}{% if current.id == category.id %} active{% endif %}" href="{% url 'category' category.id %}#works">
+                        <svg class="cat-ic i-wed" aria-hidden="true"><use href="#ic-wed"/></svg>
+                        <svg class="cat-ic i-ven" aria-hidden="true"><use href="#ic-ven"/></svg>
+                        <svg class="cat-ic i-hal" aria-hidden="true"><use href="#ic-hal"/></svg>
+                        <svg class="cat-ic i-ny" aria-hidden="true"><use href="#ic-ny"/></svg>
+                        <span>{{ category.name }}</span>
+                    </a>
                 {% empty %}
                     <p>Категорії незабаром з’являться.</p>
                 {% endfor %}
@@ -159,22 +249,31 @@
 
         <section id="how">
             <h2 class="title">Як це працює</h2>
-            <p class="sub">Три простих кроки від ідеї до готового декору.</p>
+            <p class="sub">Чотири кроки від першої ідеї до готового декору. Ви завжди знаєте, що відбувається далі.</p>
             <div class="steps">
-                <div class="step">
+                <div class="step s1">
                     <div class="num">1</div>
                     <h3>Залишаєте заявку</h3>
-                    <p>Вказуєте тип події, дату та побажання. Це займає одну хвилину.</p>
+                    <p>Обираєте тип події, вказуєте дату та коротко описуєте побажання: стиль, кольори, місце.</p>
+                    <span class="hint">Займає 1 хвилину</span>
                 </div>
-                <div class="step">
+                <div class="step s2">
                     <div class="num">2</div>
-                    <h3>Обговорюємо деталі</h3>
-                    <p>Я зв’язуюся з вами, ми обговорюємо ідею та вартість.</p>
+                    <h3>Я зв’язуюся з вами</h3>
+                    <p>Телефоном або в месенджері уточнюю деталі: локація, кількість гостей, настрій події.</p>
+                    <span class="hint">Без зобов’язань</span>
                 </div>
-                <div class="step">
+                <div class="step s3">
                     <div class="num">3</div>
+                    <h3>Ідея та вартість</h3>
+                    <p>Пропоную концепцію, палітру та орієнтовну вартість. Разом вирішуємо, що залишити, а що змінити.</p>
+                    <span class="hint">Спільно з вами</span>
+                </div>
+                <div class="step s4">
+                    <div class="num">4</div>
                     <h3>Створюю декор</h3>
-                    <p>Привожу та оформлюю все до вашої події.</p>
+                    <p>Привожу та оформлюю все до вашої події, щоб вам залишалося лише насолоджуватись.</p>
+                    <span class="hint">Все під ключ</span>
                 </div>
             </div>
         </section>
@@ -186,7 +285,7 @@
                     Категорія: {{ current.name }} ·
                     <a href="{% url 'home' %}#works" style="color: var(--mocha); text-decoration: underline;">Показати всі роботи</a>
                 {% else %}
-                    Приклади оформлення, які вже зроблені.
+                    Приклади оформлення, які вже зроблені. Натисніть на фото, щоб розглянути детальніше.
                 {% endif %}
             </p>
             <div class="grid">
@@ -207,6 +306,9 @@
                     <p>Робіт поки немає.</p>
                 {% endfor %}
             </div>
+            <p class="more">
+                <a class="btn btn-ghost" href="https://www.instagram.com/zolotaya.kh.ua" target="_blank" rel="noopener">Більше робіт і відео в Instagram</a>
+            </p>
         </section>
 
         <section class="cta">
@@ -215,21 +317,118 @@
             <a class="btn" href="{% url 'order_create' %}">Залишити заявку</a>
         </section>
 
-        <section id="contacts">
+        <section id="contacts" class="contacts-block">
             <h2 class="title">Контакти</h2>
             <p class="sub">Напишіть мені зручним для вас способом.</p>
             <div class="contacts">
-                               <a class="contact" href="tel:+380992002458">+38 (099) 200 24 58</a>
-                                <a class="contact" href="https://www.instagram.com/zolotaya.kh.ua" target="_blank" rel="noopener">Instagram</a>
+                <a class="contact" href="tel:+380992002458">+38 (099) 200 24 58</a>
+                <a class="contact" href="https://www.instagram.com/zolotaya.kh.ua" target="_blank" rel="noopener">Instagram</a>
                 <a class="contact" href="https://t.me/AlinaChechina" target="_blank" rel="noopener">Telegram</a>
             </div>
         </section>
 
-        <footer>Zolotaya · квіти та декор</footer>
-
     </div>
 
+    <footer>
+        <img class="foot-logo" src="{% static 'portfolio/logo.png' %}" alt="Zolotaya">
+        <div class="slogan">beauty in details</div>
+    </footer>
+
     <a class="btn mobile-cta" href="{% url 'order_create' %}">Залишити заявку</a>
+
+<script>
+(function () {
+    /* 1. Плавна поява блоків */
+    var items = document.querySelectorAll('.step, .card, .cat, .title, .sub, .cta, .contacts-block');
+    items.forEach(function (el) { el.classList.add('reveal'); });
+    if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) {
+                    var el = e.target;
+                    el.classList.add('in');
+                    io.unobserve(el);
+                    setTimeout(function () { el.classList.remove('reveal', 'in'); }, 900);
+                }
+            });
+        }, { threshold: 0.12 });
+        items.forEach(function (el) { io.observe(el); });
+    } else {
+        items.forEach(function (el) { el.classList.remove('reveal'); });
+    }
+
+    /* 2. Перегляд фото на весь екран */
+    var imgs = [].slice.call(document.querySelectorAll('img.card-img'));
+    if (imgs.length) {
+        var lb = document.createElement('div');
+        lb.className = 'lightbox';
+        lb.innerHTML = '<button class="lb-btn lb-prev" aria-label="Назад">&#8249;</button>' +
+            '<img alt="">' +
+            '<button class="lb-btn lb-next" aria-label="Далі">&#8250;</button>' +
+            '<button class="lb-close" aria-label="Закрити">&times;</button>' +
+            '<div class="lb-cap"></div>';
+        document.body.appendChild(lb);
+        var big = lb.querySelector('img'), cap = lb.querySelector('.lb-cap'), cur = 0;
+        var show = function (i) {
+            cur = (i + imgs.length) % imgs.length;
+            big.src = imgs[cur].src;
+            big.alt = imgs[cur].alt;
+            cap.textContent = imgs[cur].alt;
+            lb.classList.add('open');
+        };
+        var hide = function () { lb.classList.remove('open'); };
+        imgs.forEach(function (im, i) { im.addEventListener('click', function () { show(i); }); });
+        lb.querySelector('.lb-prev').onclick = function (e) { e.stopPropagation(); show(cur - 1); };
+        lb.querySelector('.lb-next').onclick = function (e) { e.stopPropagation(); show(cur + 1); };
+        lb.querySelector('.lb-close').onclick = hide;
+        lb.addEventListener('click', function (e) { if (e.target === lb) hide(); });
+        document.addEventListener('keydown', function (e) {
+            if (!lb.classList.contains('open')) return;
+            if (e.key === 'Escape') hide();
+            if (e.key === 'ArrowLeft') show(cur - 1);
+            if (e.key === 'ArrowRight') show(cur + 1);
+        });
+        var x0 = null;
+        lb.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; });
+        lb.addEventListener('touchend', function (e) {
+            if (x0 === null) return;
+            var dx = e.changedTouches[0].clientX - x0;
+            if (Math.abs(dx) > 50) show(dx < 0 ? cur + 1 : cur - 1);
+            x0 = null;
+        });
+    }
+
+    /* 3. Пелюстки на першому екрані */
+    var cv = document.getElementById('petals');
+    if (cv && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var ctx = cv.getContext('2d'), W = 0, H = 0, ps = [];
+        var size = function () { W = cv.width = cv.offsetWidth; H = cv.height = cv.offsetHeight; };
+        size();
+        window.addEventListener('resize', size);
+        var cols = ['rgba(234,215,205,.9)', 'rgba(156,122,107,.35)', 'rgba(230,213,190,.85)'];
+        for (var i = 0; i < 18; i++) {
+            ps.push({ x: Math.random() * W, y: Math.random() * H, r: 5 + Math.random() * 7,
+                      s: 0.25 + Math.random() * 0.5, d: Math.random() * 6.28, c: cols[i % 3] });
+        }
+        (function loop() {
+            ctx.clearRect(0, 0, W, H);
+            ps.forEach(function (p) {
+                p.y += p.s; p.d += 0.01; p.x += Math.sin(p.d) * 0.4;
+                if (p.y > H + 20) { p.y = -20; p.x = Math.random() * W; }
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.d);
+                ctx.fillStyle = p.c;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, p.r, p.r * 0.55, 0, 0, 6.283);
+                ctx.fill();
+                ctx.restore();
+            });
+            requestAnimationFrame(loop);
+        })();
+    }
+})();
+</script>
 
 </body>
 </html>
