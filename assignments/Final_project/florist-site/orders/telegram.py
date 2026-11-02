@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -36,6 +37,10 @@ def send_message(text):
     try:
         urllib.request.urlopen(request, timeout=5).close()
         return True
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "ignore")
+        logger.warning("Telegram відповів %s: %s", exc.code, detail)
+        return False
     except Exception as exc:
         logger.warning("Не вдалося надіслати в Telegram: %s", type(exc).__name__)
         return False
