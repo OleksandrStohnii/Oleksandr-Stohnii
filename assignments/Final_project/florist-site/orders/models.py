@@ -33,6 +33,14 @@ class Order(models.Model):
         verbose_name = "Заявка"
         verbose_name_plural = "Заявки"
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event_date"],
+                condition=models.Q(status="confirmed"),
+                name="unique_confirmed_order_per_date",
+                violation_error_message="На цю дату вже є підтверджена заявка.",
+            )
+        ]
 
     def __str__(self):
         return f"{self.name} - {self.get_event_type_display()} ({self.event_date})"
