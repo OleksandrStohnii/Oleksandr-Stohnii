@@ -2,7 +2,7 @@ from datetime import date
 
 from django import forms
 
-from .models import Order
+from .models import BlockedDate, Order
 
 
 class OrderForm(forms.ModelForm):
@@ -18,6 +18,10 @@ class OrderForm(forms.ModelForm):
         chosen = self.cleaned_data["event_date"]
         if chosen < date.today():
             raise forms.ValidationError("Оберіть дату, яка ще не минула.")
+        if BlockedDate.objects.filter(date=chosen).exists():
+            raise forms.ValidationError(
+                "На цю дату запис закрито. Оберіть, будь ласка, іншу дату."
+            )
         if Order.objects.filter(
             event_date=chosen, status=Order.Status.CONFIRMED
         ).exists():

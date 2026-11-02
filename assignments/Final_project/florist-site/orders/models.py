@@ -44,3 +44,17 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.get_event_type_display()} ({self.event_date})"
+
+
+class BlockedDate(models.Model):
+    date = models.DateField("Дата", unique=True)
+    reason = models.CharField("Причина", max_length=120, blank=True)
+    created_at = models.DateTimeField("Створено", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Закрита дата"
+        verbose_name_plural = "Закриті дати"
+        ordering = ["date"]
+
+    def __str__(self):
+        return f"{self.date:%d.%m.%Y} {self.reason}".strip()

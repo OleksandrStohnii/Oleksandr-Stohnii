@@ -32,6 +32,7 @@
         .msg { margin: 0 0 16px; padding: 14px 20px; border-radius: 14px; font-size: 14px; font-weight: 500; }
         .msg.success { background: #DCEED8; color: #2F5A2A; }
         .msg.error { background: #F6D9D0; color: #7A3B2C; }
+        .msg.warning { background: #F4E7C5; color: #6B5314; }
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 10px 0 28px; }
         .stat { background: #fff; border: 1px solid var(--sand); border-radius: 20px; padding: 20px 22px; }
         .stat b { display: block; font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 600; line-height: 1; margin-bottom: 6px; }
@@ -46,8 +47,10 @@
         .day.out { background: transparent; border-style: dashed; opacity: .55; }
         .day.today { border-color: var(--navy); box-shadow: 0 0 0 2px rgba(30,42,74,.15); }
         .day.busy { background: #EAF3E6; border-color: #7FA37A; }
-        .day .n { font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .day.closed { background: repeating-linear-gradient(135deg, #F1ECE6, #F1ECE6 8px, #E8E0D7 8px, #E8E0D7 16px); border-color: #B7A99B; }
+        .day .n { font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; margin-bottom: 8px; gap: 4px; }
         .day .busy-tag { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #4A7A44; }
+        .day .closed-tag { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #7D5F52; text-align: right; }
         .chip { display: block; margin-bottom: 4px; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .more { font-size: 11px; color: var(--muted); }
         .st-new { background: #F6D9D0; color: #7A3B2C; }
@@ -62,18 +65,23 @@
         .badge { display: inline-block; padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
         .acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
         .acts form { margin: 0; }
-        .act { font-family: 'Montserrat', Arial, sans-serif; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--navy); background: transparent; color: var(--navy); font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
+        .act { font-family: 'Montserrat', Arial, sans-serif; display: inline-block; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--navy); background: transparent; color: var(--navy); font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
         .act:hover { background: var(--navy); color: #fff; }
         .act.ok { background: #5F8F59; border-color: #5F8F59; color: #fff; }
         .act.ok:hover { background: #497243; }
         .act.no { border-color: #B3392B; color: #B3392B; }
         .act.no:hover { background: #B3392B; color: #fff; }
+        .block-form { display: flex; flex-wrap: wrap; gap: 12px; background: #fff; border: 1px solid var(--sand); border-radius: 18px; padding: 18px 20px; margin-bottom: 16px; align-items: center; }
+        .block-form input { font-family: 'Montserrat', Arial, sans-serif; font-size: 15px; padding: 12px 14px; border: 1px solid var(--sand); border-radius: 12px; background: var(--milk); color: var(--navy); }
+        .block-form input[name=reason] { flex: 1; min-width: 180px; }
+        .block-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--sand); border-radius: 14px; padding: 12px 18px; margin-bottom: 8px; }
+        .block-row form { margin: 0; }
         .empty { color: var(--muted); padding: 24px 0; }
         @media (max-width: 760px) {
             .wrap { padding: 0 14px 60px; }
             .day { min-height: 70px; padding: 6px; }
             .chip { width: 9px; height: 9px; padding: 0; border-radius: 50%; display: inline-block; margin-right: 3px; font-size: 0; }
-            .day .busy-tag { display: none; }
+            .day .busy-tag, .day .closed-tag { display: none; }
             .nav h2 { font-size: 22px; }
             .row { grid-template-columns: 1fr; gap: 8px; }
             .acts { justify-content: flex-start; }
@@ -113,13 +121,17 @@
         <span><i style="background:#7FA37A"></i>Підтверджена</span>
         <span><i style="background:#9AA1B2"></i>Виконана</span>
         <span>Зелена клітинка: дата зайнята</span>
+        <span>Смугаста клітинка: дата закрита</span>
     </div>
 
     <div class="cal">
         {% for name in weekdays %}<div class="dow">{{ name }}</div>{% endfor %}
         {% for week in weeks %}{% for day in week %}
-            <div class="day{% if not day.in_month %} out{% endif %}{% if day.is_today %} today{% endif %}{% if day.confirmed %} busy{% endif %}">
-                <div class="n"><span>{{ day.date.day }}</span>{% if day.confirmed %}<span class="busy-tag">зайнято</span>{% endif %}</div>
+            <div class="day{% if not day.in_month %} out{% endif %}{% if day.is_today %} today{% endif %}{% if day.confirmed %} busy{% endif %}{% if day.blocked %} closed{% endif %}"{% if day.blocked.reason %} title="{{ day.blocked.reason }}"{% endif %}>
+                <div class="n"><span>{{ day.date.day }}</span>
+                    {% if day.blocked %}<span class="closed-tag">закрито{% if day.blocked.reason %}: {{ day.blocked.reason|truncatechars:12 }}{% endif %}</span>
+                    {% elif day.confirmed %}<span class="busy-tag">зайнято</span>{% endif %}
+                </div>
                 {% for o in day.orders|slice:":3" %}
                     <a class="chip st-{{ o.status }}" href="{% url 'admin:orders_order_change' o.pk %}" title="{{ o.name }}, {{ o.get_event_type_display }}">{{ o.name }}</a>
                 {% endfor %}
@@ -127,6 +139,23 @@
             </div>
         {% endfor %}{% endfor %}
     </div>
+
+    <h3 class="sec">Закрити дату</h3>
+    <form class="block-form" method="post" action="{% url 'panel_block' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input type="date" name="date" min="{{ today }}" required>
+        <input type="text" name="reason" maxlength="120" placeholder="Причина (відпустка, вихідний...)">
+        <button class="act ok">Закрити дату</button>
+    </form>
+    {% for b in blocks %}
+        <div class="block-row">
+            <span><b>{{ b.date|date:"d.m.Y" }}</b>{% if b.reason %} · {{ b.reason }}{% endif %}</span>
+            <form method="post" action="{% url 'panel_unblock' b.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="act">Відкрити дату</button></form>
+        </div>
+    {% empty %}
+        <p class="empty">Закритих дат немає.</p>
+    {% endfor %}
 
     <h3 class="sec">Найближчі заявки</h3>
     {% for o in upcoming %}

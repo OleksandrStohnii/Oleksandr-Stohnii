@@ -13,7 +13,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .forms import OrderForm
-from .models import Order
+from .models import BlockedDate, Order
 from .telegram import notify_new_order
 
 MONTHS = [
@@ -53,6 +53,13 @@ def _shift(first, delta):
     return date(index // 12, index % 12 + 1, 1)
 
 
+def _back(request):
+    target = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}):
+        target = reverse("panel")
+    return redirect(target)
+
+
 @staff_member_required
 def panel(request):
     today = timezone.localdate()
@@ -69,6 +76,8 @@ def panel(request):
     for order in month_orders:
         by_day[order.event_date].append(order)
 
+    blocked = {b.date: b for b in BlockedDate.objects.filter(date__range=(start, end))}
+
     weeks = []
     for week in weeks_dates:
         row = []
@@ -80,6 +89,7 @@ def panel(request):
                 "is_today": day == today,
                 "orders": orders,
                 "confirmed": any(o.status == Order.Status.CONFIRMED for o in orders),
+                "blocked": blocked.get(day),
             })
         weeks.append(row)
 
@@ -96,6 +106,8 @@ def panel(request):
         "prev_month": _shift(first, -1).strftime("%Y-%m"),
         "next_month": _shift(first, 1).strftime("%Y-%m"),
         "upcoming": upcoming,
+        "blocks": BlockedDate.objects.filter(date__gte=today)[:30],
+        "today": today.isoformat(),
         "new_count": Order.objects.filter(status=Order.Status.NEW).count(),
         "confirmed_count": Order.objects.filter(
             status=Order.Status.CONFIRMED, event_date__gte=today
@@ -128,8 +140,45 @@ def set_status(request, pk):
                 request,
                 f"Заявку «{order.name}» переведено в статус: {order.get_status_display()}.",
             )
+    return _back(request)
 
-    target = request.POST.get("next", "")
-    if not url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}):
-        target = reverse("panel")
-    return redirect(target)
+
+@staff_member_required
+@require_POST
+def block_date(request):
+    if not request.user.has_perm("orders.add_blockeddate"):
+        raise PermissionDenied
+    try:
+        day = date.fromisoformat(request.POST.get("date", ""))
+    except ValueError:
+        messages.error(request, "Оберіть коректну дату.")
+        return _back(request)
+
+    if day < timezone.localdate():
+        messages.error(request, "Не можна закрити дату, яка вже минула.")
+        return _back(request)
+
+    reason = request.POST.get("reason", "").strip()[:120]
+    _, created = BlockedDate.objects.get_or_create(date=day, defaults={"reason": reason})
+    if not created:
+        messages.error(request, "Ця дата вже закрита.")
+    else:
+        messages.success(request, f"Дату {day:%d.%m.%Y} закрито для нових заявок.")
+        if Order.objects.filter(event_date=day, status=Order.Status.CONFIRMED).exists():
+            messages.warning(
+                request,
+                "Увага: на цю дату вже є підтверджена заявка, вона залишилась без змін.",
+            )
+    return _back(request)
+
+
+@staff_member_required
+@require_POST
+def unblock_date(request, pk):
+    if not request.user.has_perm("orders.delete_blockeddate"):
+        raise PermissionDenied
+    block = get_object_or_404(BlockedDate, pk=pk)
+    label = f"{block.date:%d.%m.%Y}"
+    block.delete()
+    messages.success(request, f"Дату {label} знову відкрито для заявок.")
+    return _back(request)
