@@ -24,11 +24,14 @@
         .brand { display: flex; align-items: center; gap: 14px; font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 600; }
         .brand img { width: 48px; height: 48px; }
         .links { display: flex; gap: 12px; flex-wrap: wrap; }
-        .pill { padding: 10px 20px; border: 1px solid var(--navy); border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; transition: background .2s, color .2s; }
+        .pill { display: inline-block; padding: 10px 20px; border: 1px solid var(--navy); border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; transition: background .2s, color .2s; }
         button.pill { font-family: 'Montserrat', Arial, sans-serif; background: transparent; color: var(--navy); cursor: pointer; }
         .pill:hover { background: var(--navy); color: #fff; }
         .pill.solid { background: var(--mocha); border-color: var(--mocha); color: #fff; }
         .pill.solid:hover { background: var(--mocha-dark); }
+        .msg { margin: 0 0 16px; padding: 14px 20px; border-radius: 14px; font-size: 14px; font-weight: 500; }
+        .msg.success { background: #DCEED8; color: #2F5A2A; }
+        .msg.error { background: #F6D9D0; color: #7A3B2C; }
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 10px 0 28px; }
         .stat { background: #fff; border: 1px solid var(--sand); border-radius: 20px; padding: 20px 22px; }
         .stat b { display: block; font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 600; line-height: 1; margin-bottom: 6px; }
@@ -53,10 +56,18 @@
         .st-done { background: #E2E4EA; color: #4A5163; }
         .st-cancelled { background: #EEE; color: #888; }
         h3.sec { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; margin: 44px 0 16px; }
-        .row { display: grid; grid-template-columns: 110px 1.2fr 1.1fr 1fr auto; gap: 14px; align-items: center; background: #fff; border: 1px solid var(--sand); border-radius: 18px; padding: 16px 20px; margin-bottom: 10px; }
+        .row { display: grid; grid-template-columns: 110px 1.1fr 1.1fr 130px minmax(220px, auto); gap: 14px; align-items: center; background: #fff; border: 1px solid var(--sand); border-radius: 18px; padding: 16px 20px; margin-bottom: 10px; }
         .row .d { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; }
         .row small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
         .badge { display: inline-block; padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+        .acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+        .acts form { margin: 0; }
+        .act { font-family: 'Montserrat', Arial, sans-serif; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--navy); background: transparent; color: var(--navy); font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
+        .act:hover { background: var(--navy); color: #fff; }
+        .act.ok { background: #5F8F59; border-color: #5F8F59; color: #fff; }
+        .act.ok:hover { background: #497243; }
+        .act.no { border-color: #B3392B; color: #B3392B; }
+        .act.no:hover { background: #B3392B; color: #fff; }
         .empty { color: var(--muted); padding: 24px 0; }
         @media (max-width: 760px) {
             .wrap { padding: 0 14px 60px; }
@@ -64,7 +75,8 @@
             .chip { width: 9px; height: 9px; padding: 0; border-radius: 50%; display: inline-block; margin-right: 3px; font-size: 0; }
             .day .busy-tag { display: none; }
             .nav h2 { font-size: 22px; }
-            .row { grid-template-columns: 1fr; gap: 6px; }
+            .row { grid-template-columns: 1fr; gap: 8px; }
+            .acts { justify-content: flex-start; }
         }
     </style>
 </head>
@@ -79,6 +91,10 @@
             <a class="pill" href="{% url 'admin:portfolio_work_changelist' %}">Роботи</a>
         </div>
     </div>
+
+    {% for message in messages %}
+        <div class="msg {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
 
     <div class="stats">
         <div class="stat"><b>{{ new_count }}</b><span>Нових заявок</span></div>
@@ -119,7 +135,19 @@
             <div>{{ o.name }}<small>{{ o.get_event_type_display }}</small></div>
             <div><a href="tel:{{ o.phone }}">{{ o.phone }}</a>{% if o.message %}<small>{{ o.message|truncatechars:60 }}</small>{% endif %}</div>
             <div><span class="badge st-{{ o.status }}">{{ o.get_status_display }}</span></div>
-            <a class="pill" href="{% url 'admin:orders_order_change' o.pk %}">Відкрити</a>
+            <div class="acts">
+                {% if o.status == "new" %}
+                    <form method="post" action="{% url 'panel_status' o.pk %}">{% csrf_token %}<input type="hidden" name="status" value="in_progress"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="act">В роботу</button></form>
+                {% endif %}
+                {% if o.status == "new" or o.status == "in_progress" %}
+                    <form method="post" action="{% url 'panel_status' o.pk %}">{% csrf_token %}<input type="hidden" name="status" value="confirmed"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="act ok">Підтвердити</button></form>
+                {% endif %}
+                {% if o.status == "confirmed" %}
+                    <form method="post" action="{% url 'panel_status' o.pk %}">{% csrf_token %}<input type="hidden" name="status" value="done"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="act ok">Виконано</button></form>
+                {% endif %}
+                <form method="post" action="{% url 'panel_status' o.pk %}" onsubmit="return confirm('Скасувати цю заявку?');">{% csrf_token %}<input type="hidden" name="status" value="cancelled"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="act no">Скасувати</button></form>
+                <a class="act" href="{% url 'admin:orders_order_change' o.pk %}">Відкрити</a>
+            </div>
         </div>
     {% empty %}
         <p class="empty">Найближчих заявок поки немає.</p>

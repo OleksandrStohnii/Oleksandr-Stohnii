@@ -2,9 +2,15 @@ import calendar
 from collections import defaultdict
 from datetime import date
 
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import redirect, render
+from django.core.exceptions import PermissionDenied
+from django.db import IntegrityError, transaction
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 
 from .forms import OrderForm
 from .models import Order
@@ -95,3 +101,35 @@ def panel(request):
             status=Order.Status.CONFIRMED, event_date__gte=today
         ).count(),
     })
+
+
+@staff_member_required
+@require_POST
+def set_status(request, pk):
+    if not request.user.has_perm("orders.change_order"):
+        raise PermissionDenied
+    order = get_object_or_404(Order, pk=pk)
+    new_status = request.POST.get("status")
+
+    if new_status not in Order.Status.values:
+        messages.error(request, "Невідомий статус.")
+    else:
+        order.status = new_status
+        try:
+            with transaction.atomic():
+                order.save(update_fields=["status"])
+        except IntegrityError:
+            messages.error(
+                request,
+                "На цю дату вже є підтверджена заявка. Спочатку змініть її статус.",
+            )
+        else:
+            messages.success(
+                request,
+                f"Заявку «{order.name}» переведено в статус: {order.get_status_display()}.",
+            )
+
+    target = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}):
+        target = reverse("panel")
+    return redirect(target)

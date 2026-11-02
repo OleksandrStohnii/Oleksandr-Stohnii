@@ -4,11 +4,12 @@ from django.contrib import admin
 from django.urls import include, path
 
 from orders.pwa import manifest, offline, service_worker
-from orders.views import panel
+from orders.views import panel, set_status
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("panel/", panel, name="panel"),
+    path("panel/status/<int:pk>/", set_status, name="panel_status"),
     path("panel/manifest.webmanifest", manifest, name="panel_manifest"),
     path("panel/offline/", offline, name="panel_offline"),
     path("panel-sw.js", service_worker, name="panel_sw"),
