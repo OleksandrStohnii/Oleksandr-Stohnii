@@ -4,7 +4,7 @@ from .models import Category, Work
 
 
 def home(request, category_id=None):
-    categories = Category.objects.all()
+    categories = Category.objects.prefetch_related("works")
     works = Work.objects.select_related("category")
     current = None
     if category_id is not None:
