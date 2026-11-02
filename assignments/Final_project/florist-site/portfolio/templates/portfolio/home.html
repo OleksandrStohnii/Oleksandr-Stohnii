@@ -59,7 +59,7 @@
         .sub { color: var(--muted); margin: 0 0 28px; font-size: 16px; line-height: 1.6; }
 
         /* Категорії */
-        .cats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+        .cats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; }
         .cat { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 190px; padding: 24px 22px; border-radius: 22px; font-size: 14px; letter-spacing: .16em; text-transform: uppercase; line-height: 1.4; transition: transform .25s, box-shadow .25s; }
         .cat:hover { transform: translateY(-6px); box-shadow: 0 16px 30px rgba(30,42,74,.18); }
         .cat::after { content: "→"; position: absolute; right: 20px; bottom: 18px; font-size: 20px; opacity: .6; transition: transform .25s; }
@@ -69,8 +69,9 @@
         .c-ven { background: linear-gradient(135deg, #1E2A4A, #35477A); color: var(--sand); }
         .c-hal { background: linear-gradient(135deg, #3A2723, #70493A); color: #F2D9B8; }
         .c-ny  { background: linear-gradient(135deg, #8C6C60, #BC9686); color: #fff; }
+        .c-kid { background: linear-gradient(135deg, #DDEAD8, #A9C3A4); color: var(--choc); }
         .c-def { background: var(--sand); color: var(--choc); }
-        .c-wed .i-wed, .c-ven .i-ven, .c-hal .i-hal, .c-ny .i-ny { display: block; }
+        .c-wed .i-wed, .c-ven .i-ven, .c-hal .i-hal, .c-ny .i-ny, .c-kid .i-kid { display: block; }
         .cat.active { outline: 2px solid var(--navy); outline-offset: 3px; }
 
         /* Як це працює */
@@ -139,7 +140,6 @@
         /* Планшети */
         @media (max-width: 1000px) {
             .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         /* Телефони */
         @media (max-width: 800px) {
@@ -153,7 +153,7 @@
             .logo img { height: 46px; width: 46px; }
             .band { letter-spacing: .3em; font-size: 11px; }
             .title { font-size: 22px; }
-            .cats { gap: 12px; }
+            .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
             .cat { min-height: 150px; padding: 18px 16px; font-size: 12px; }
             .cat-ic { width: 42px; height: 42px; }
             .steps, .grid { grid-template-columns: 1fr; }
@@ -175,6 +175,11 @@
 
     <!-- Іконки напрямів -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="ic-kid" viewBox="0 0 48 48">
+            <ellipse cx="24" cy="18" rx="12" ry="14"/>
+            <path d="M24 32 l-3 4 h6z"/>
+            <path d="M24 36 q-5 3 0 6 q5 3 0 5"/>
+        </symbol>
         <symbol id="ic-wed" viewBox="0 0 48 48">
             <circle cx="17" cy="30" r="11"/><circle cx="31" cy="30" r="11"/>
             <path d="M24 5 l4.5 5.5 L24 16 l-4.5-5.5z"/>
@@ -213,7 +218,7 @@
             <div>
                 <p class="tagline">beauty in details</p>
                 <h1>Квіти та декор для ваших найважливіших днів</h1>
-                <p class="lead">Весілля, оформлення закладів, Гелловін і Новий рік. Розкажіть про свою подію, і я домовлюся з вами про деталі та вартість.</p>
+                <p class="lead">Весілля, оформлення закладів, Гелловін, Новий рік і дитячі майстер-класи. Розкажіть про свою подію, і я домовлюся з вами про деталі та вартість.</p>
                 <div class="hero-actions">
                     <a class="btn" href="{% url 'order_create' %}">Залишити заявку</a>
                     <a class="btn btn-ghost" href="#works">Дивитись роботи</a>
@@ -234,11 +239,12 @@
             <p class="sub">Оберіть напрям, щоб побачити роботи саме з цієї категорії.</p>
             <div class="cats">
                 {% for category in categories %}
-                    <a class="cat {% if 'Весіл' in category.name %}c-wed{% elif 'закл' in category.name %}c-ven{% elif 'Гел' in category.name %}c-hal{% elif 'Нов' in category.name %}c-ny{% else %}c-def{% endif %}{% if current.id == category.id %} active{% endif %}" href="{% url 'category' category.id %}#works">
+                    <a class="cat {% if 'Весіл' in category.name %}c-wed{% elif 'закл' in category.name %}c-ven{% elif 'Гел' in category.name %}c-hal{% elif 'Нов' in category.name %}c-ny{% elif 'майстер' in category.name %}c-kid{% else %}c-def{% endif %}{% if current.id == category.id %} active{% endif %}" href="{% url 'category' category.id %}#works">
                         <svg class="cat-ic i-wed" aria-hidden="true"><use href="#ic-wed"/></svg>
                         <svg class="cat-ic i-ven" aria-hidden="true"><use href="#ic-ven"/></svg>
                         <svg class="cat-ic i-hal" aria-hidden="true"><use href="#ic-hal"/></svg>
                         <svg class="cat-ic i-ny" aria-hidden="true"><use href="#ic-ny"/></svg>
+                        <svg class="cat-ic i-kid" aria-hidden="true"><use href="#ic-kid"/></svg>
                         <span>{{ category.name }}</span>
                     </a>
                 {% empty %}

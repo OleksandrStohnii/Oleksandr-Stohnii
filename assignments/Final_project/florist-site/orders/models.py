@@ -7,6 +7,7 @@ class Order(models.Model):
         VENUE = "venue", "Оформлення закладу"
         HALLOWEEN = "halloween", "Гелловін"
         NEW_YEAR = "new_year", "Новий рік"
+        KIDS = "kids", "Дитячий майстер-клас"
         OTHER = "other", "Інше"
 
     class Status(models.TextChoices):
