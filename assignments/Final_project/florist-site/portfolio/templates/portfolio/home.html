@@ -7,559 +7,457 @@
     <title>Zolotaya — квіти та декор, beauty in details</title>
     <meta name="description" content="Квіткове оформлення та декор подій: весілля, заклади, Гелловін, Новий рік, дитячі майстер-класи.">
     <link rel="icon" href="{% static 'portfolio/logo.png' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --mocha: #9C7A6B; --mocha-dark: #7D5F52; --navy: #1E2A4A;
             --sand: #E6D5BE; --blush: #EAD7CD; --milk: #F7F1EA; --choc: #3A2723;
-            --muted: #5E6578; --rose: #D9A79A; --sage: #9DB09A;
+            --muted: #4F5A73; --rose: #D9A79A; --sage: #9DB09A;
         }
         * { box-sizing: border-box; }
-        html { scroll-behavior: smooth; scroll-padding-top: 84px; }
-        body { margin: 0; background: var(--milk); color: var(--navy); font-family: 'Inter', Arial, sans-serif; font-weight: 300; overflow-x: hidden; }
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+        body { margin: 0; background: var(--milk); color: var(--navy); font-family: 'Jost', Arial, sans-serif; font-weight: 400; line-height: 1.5; overflow-x: hidden; }
         a { color: inherit; text-decoration: none; }
-        .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
-        h1, h2, h3, .num, summary { font-family: 'Jost', 'Inter', Arial, sans-serif; font-weight: 400; }
-
-        /* Смуга прогресу */
-        #progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 200; background: linear-gradient(90deg, var(--rose), var(--mocha), var(--navy)); }
-
-        /* Шапка */
-        .topbar { position: sticky; top: 0; z-index: 50; background: rgba(247,241,234,.9); backdrop-filter: blur(10px); border-bottom: 1px solid transparent; transition: border-color .3s, box-shadow .3s; }
-        .topbar.scrolled { border-bottom-color: var(--sand); box-shadow: 0 6px 24px rgba(30,42,74,.07); }
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
-        .brand { display: flex; align-items: center; gap: 14px; }
-        .brand img { display: block; height: 52px; width: 52px; }
-        .brand span { font-family: 'Jost', sans-serif; font-size: 15px; font-weight: 500; letter-spacing: .42em; text-transform: uppercase; color: var(--mocha); }
-        .nav-links { display: flex; align-items: center; gap: 28px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
-        .nav-links > a:not(.btn) { position: relative; }
-        .nav-links > a:not(.btn)::after { content: ""; position: absolute; left: 0; bottom: -6px; width: 0; height: 1px; background: var(--mocha); transition: width .3s; }
-        .nav-links > a:not(.btn):hover::after { width: 100%; }
-        .burger { display: none; width: 44px; height: 44px; border: 1px solid var(--sand); border-radius: 50%; background: transparent; cursor: pointer; padding: 0; position: relative; }
-        .burger span { position: absolute; left: 12px; right: 12px; height: 1.5px; background: var(--navy); transition: transform .3s, opacity .3s; }
-        .burger span:nth-child(1) { top: 16px; } .burger span:nth-child(2) { top: 21px; } .burger span:nth-child(3) { top: 26px; }
-        .topbar.open .burger span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
-        .topbar.open .burger span:nth-child(2) { opacity: 0; }
-        .topbar.open .burger span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+        .wrap { max-width: 1240px; margin: 0 auto; padding: 0 28px; }
+        h1, h2, h3, .serif { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 500; }
+        .label { font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; }
 
         /* Кнопки */
-        .btn { display: inline-block; background: var(--mocha); color: #fff; padding: 16px 32px; border-radius: 999px; font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; text-align: center; box-shadow: 0 8px 22px rgba(156,122,107,.3); transition: transform .2s, background .2s, box-shadow .2s; }
-        .btn:hover { background: var(--mocha-dark); transform: translateY(-3px); box-shadow: 0 14px 28px rgba(156,122,107,.38); }
-        .btn-small { padding: 11px 22px; box-shadow: none; }
-        .btn-ghost { background: transparent; color: var(--navy); border: 1px solid var(--navy); box-shadow: none; padding: 15px 30px; }
-        .btn-ghost:hover { background: var(--navy); color: #fff; box-shadow: none; }
+        .btn { display: inline-block; padding: 17px 38px; border: 1px solid currentColor; border-radius: 999px; font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; text-align: center; transition: background .3s, color .3s, border-color .3s, transform .3s, box-shadow .3s; }
+        .btn:hover { transform: translateY(-3px); }
+        .btn-solid { background: var(--mocha); border-color: var(--mocha); color: #fff; box-shadow: 0 8px 22px rgba(156,122,107,.3); }
+        .btn-solid:hover { background: var(--mocha-dark); border-color: var(--mocha-dark); box-shadow: 0 14px 28px rgba(156,122,107,.38); }
+        .btn-light { color: #fff; }
+        .btn-light:hover { background: #fff; color: var(--navy); border-color: #fff; }
+        .btn-dark { color: var(--navy); }
+        .btn-dark:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
 
-        /* Головний екран */
-        .hero-bg { position: relative; overflow: hidden; background: radial-gradient(circle at 85% 20%, #F2D9CF 0%, transparent 45%), linear-gradient(135deg, var(--blush) 0%, var(--milk) 62%); }
-        #petals { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-        .hero { position: relative; display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: center; padding: 64px 0 96px; }
-        .tagline { font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: .38em; color: var(--mocha); margin: 0 0 20px; display: flex; align-items: center; gap: 14px; }
-        .tagline::before { content: ""; width: 40px; height: 1px; background: var(--mocha); }
-        .hero h1 { font-size: clamp(32px, 4.6vw, 58px); line-height: 1.12; font-weight: 300; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 22px; }
-        .hero h1 em { font-style: normal; color: var(--mocha); font-weight: 400; }
-        .hero p.lead { font-size: 18px; line-height: 1.75; color: var(--muted); margin: 0 0 34px; max-width: 520px; }
-        .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
-        .hero-photo { position: relative; max-width: 420px; width: 100%; margin-left: auto; will-change: transform; }
-        .hero-photo::before { content: ""; position: absolute; inset: -16px; background: var(--sand); border-radius: 999px 999px 28px 28px; }
-        .hero-photo::after { content: ""; position: absolute; inset: -16px; border: 1px solid var(--mocha); border-radius: 999px 999px 28px 28px; transform: scale(1.045); }
-        .hero-img { position: relative; z-index: 1; display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: center top; border-radius: 999px 999px 24px 24px; }
-        .float-card { position: absolute; z-index: 3; left: -44px; bottom: 56px; display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 20px; padding: 12px 20px 12px 12px; box-shadow: 0 18px 40px rgba(30,42,74,.16); animation: bob 5s ease-in-out infinite; }
-        .float-card img { width: 46px; height: 46px; display: block; }
-        .float-card b { display: block; font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; }
-        .float-card small { color: var(--muted); font-size: 12px; letter-spacing: .06em; }
-        @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+        /* Шапка */
+        .top { position: fixed; top: 0; left: 0; right: 0; z-index: 100; color: #fff; transition: background .4s, color .4s, box-shadow .4s, padding .4s; padding: 14px 0; }
+        .top.solid, .top.open { background: rgba(247,241,234,.96); color: var(--navy); box-shadow: 0 1px 0 var(--sand); padding: 8px 0; backdrop-filter: blur(8px); }
+        .bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+        .side { display: flex; align-items: center; gap: 30px; font-size: 12px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; }
+        .side.right { justify-self: end; }
+        .side a { position: relative; padding: 6px 0; }
+        .side a::after { content: ""; position: absolute; left: 0; bottom: 0; width: 0; height: 1px; background: currentColor; transition: width .3s; }
+        .side a:hover::after { width: 100%; }
+        .brand img { display: block; width: 64px; height: 64px; transition: width .4s, height .4s; }
+        .top.solid .brand img { width: 52px; height: 52px; }
+        .burger { display: none; background: none; border: 0; color: inherit; font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; cursor: pointer; padding: 10px 0; justify-self: start; }
+        .drawer { display: none; }
 
-        /* Біжучий рядок */
-        .marquee { background: var(--navy); color: var(--sand); overflow: hidden; white-space: nowrap; padding: 18px 0; }
-        .marquee-track { display: inline-flex; animation: slide 36s linear infinite; }
-        .mq { display: inline-flex; gap: 40px; padding-right: 40px; }
-        .mq span { font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: .42em; text-transform: uppercase; }
-        .mq i { color: var(--rose); font-style: normal; }
-        @keyframes slide { to { transform: translateX(-50%); } }
+        /* Перший екран */
+        .hero { position: relative; min-height: 100vh; min-height: 100svh; display: flex; align-items: flex-end; justify-content: center; color: #fff; text-align: center; overflow: hidden; background: linear-gradient(160deg, #B8826F, #3A2723); }
+        .hero-img { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(1.06); animation: settle 2.4s ease-out forwards; }
+        @keyframes settle { to { transform: scale(1); } }
+        .hero::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(to bottom, rgba(58,39,35,.45) 0%, rgba(58,39,35,.08) 40%, rgba(58,39,35,.72) 100%); }
+        #petals { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none; }
+        .hero-in { position: relative; z-index: 3; padding: 0 24px 100px; max-width: 900px; }
+        .hero .label { color: var(--blush); margin: 0 0 22px; display: flex; align-items: center; justify-content: center; gap: 16px; }
+        .hero .label::before, .hero .label::after { content: ""; width: 38px; height: 1px; background: var(--blush); opacity: .8; }
+        .hero h1 { font-size: clamp(40px, 6.4vw, 86px); line-height: 1.04; font-weight: 500; margin: 0 0 22px; text-shadow: 0 2px 24px rgba(0,0,0,.25); }
+        .hero h1 em { font-style: italic; font-weight: 500; color: var(--blush); }
+        .hero p.sub { font-size: 18px; line-height: 1.7; margin: 0 auto 38px; max-width: 560px; }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+        .hero .btn-solid { box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+        .scroll { position: absolute; z-index: 3; left: 50%; bottom: 26px; width: 1px; height: 46px; background: rgba(255,255,255,.75); transform: translateX(-50%); animation: drip 2.2s ease-in-out infinite; transform-origin: top; }
+        @keyframes drip { 0% { transform: translateX(-50%) scaleY(0); } 50% { transform: translateX(-50%) scaleY(1); } 100% { transform: translateX(-50%) scaleY(0); transform-origin: bottom; } }
 
-        /* Секції */
-        section { padding: 28px 0; }
-        .title { font-size: 28px; line-height: 1.2; font-weight: 300; letter-spacing: .18em; text-transform: uppercase; margin: 44px 0 14px; }
-        .title::after { content: ""; display: block; width: 56px; height: 1px; background: var(--mocha); margin-top: 14px; }
-        .sub { color: var(--muted); margin: 0 0 30px; font-size: 16px; line-height: 1.65; max-width: 640px; }
+        /* Синя смуга */
+        .band { background: var(--navy); color: var(--sand); text-align: center; padding: 18px 12px; font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: .5em; text-transform: uppercase; }
+        .band span { margin: 0 12px; }
+        .band i { color: var(--rose); font-style: normal; }
 
-        /* Категорії з фото */
-        .cats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 18px; counter-reset: c; }
-        .cat { position: relative; overflow: hidden; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; grid-column: span 2; min-height: 300px; padding: 24px; border-radius: 26px; color: #fff; transition: transform .3s, box-shadow .3s; }
-        .cat:nth-child(-n+2) { grid-column: span 3; min-height: 360px; }
-        .cat:hover { transform: translateY(-8px); box-shadow: 0 24px 44px rgba(30,42,74,.26); }
-        .cat-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; z-index: -2; transition: transform 1s cubic-bezier(.2, .7, .2, 1); }
-        .cat:hover .cat-bg { transform: scale(1.08); }
-        .cat-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgba(18,22,38,.84) 0%, rgba(18,22,38,.3) 55%, rgba(18,22,38,.1) 100%); }
-        .cat-top { display: flex; justify-content: space-between; align-items: flex-start; }
-        .cat-ic { display: none; width: 46px; height: 46px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
-        .cat-n { margin-left: auto; font-family: 'Jost', sans-serif; font-size: 12px; letter-spacing: .24em; opacity: .85; }
-        .cat-n::before { counter-increment: c; content: "0" counter(c); }
-        .cat-bottom { padding-right: 62px; }
-        .cat-name { display: block; font-family: 'Jost', sans-serif; font-size: 21px; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; line-height: 1.3; }
-        .cat-count { display: block; margin-top: 8px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; opacity: .8; }
-        .cat-go { position: absolute; right: 22px; bottom: 22px; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,.7); display: flex; align-items: center; justify-content: center; font-size: 20px; transition: background .3s, color .3s, transform .3s; }
-        .cat:hover .cat-go { background: #fff; color: var(--navy); transform: translateX(4px); }
+        /* Заголовки секцій */
+        .head { margin-bottom: 40px; }
+        .head .label { color: var(--mocha); margin: 0 0 14px; }
+        .head h2 { font-size: clamp(32px, 3.8vw, 50px); font-weight: 500; margin: 0; line-height: 1.1; }
+        .head h2::after { content: ""; display: block; width: 56px; height: 1px; background: var(--mocha); margin-top: 18px; }
+        .head p.note { color: var(--muted); font-size: 17px; margin: 16px 0 0; max-width: 620px; }
+
+        /* Напрями */
+        .block { padding: 100px 0 40px; }
+        .cats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px; counter-reset: c; }
+        .cat { position: relative; overflow: hidden; isolation: isolate; grid-column: span 2; aspect-ratio: 3 / 4; display: flex; flex-direction: column; justify-content: flex-end; padding: 30px; color: #fff; border-radius: 26px; transition: transform .35s, box-shadow .35s; }
+        .cat:nth-child(n+4) { grid-column: span 3; aspect-ratio: 16 / 10; }
+        .cat:hover { transform: translateY(-8px); box-shadow: 0 24px 44px rgba(30,42,74,.24); }
+        .cat-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform 1.2s cubic-bezier(.2,.7,.2,1); }
+        .cat:hover .cat-bg { transform: scale(1.07); }
+        .cat::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgba(20,24,40,.8) 0%, rgba(20,24,40,.12) 60%); }
         .c-wed { background: linear-gradient(145deg, #C98F7E, #E3B7A8); }
         .c-ven { background: linear-gradient(145deg, #1E2A4A, #3B4F86); }
         .c-hal { background: linear-gradient(145deg, #3A2723, #78503F); }
-        .c-ny  { background: linear-gradient(145deg, #8C6C60, #C29C8B); }
+        .c-ny { background: linear-gradient(145deg, #8C6C60, #C29C8B); }
         .c-kid { background: linear-gradient(145deg, #6F9070, #A3BF9E); }
         .c-def { background: linear-gradient(145deg, #9C7A6B, #C9A78F); }
-        .c-wed .i-wed, .c-ven .i-ven, .c-hal .i-hal, .c-ny .i-ny, .c-kid .i-kid { display: block; }
-        .cat.active { outline: 2px solid var(--navy); outline-offset: 4px; }
+        .cat-n { position: absolute; top: 26px; left: 30px; opacity: .9; }
+        .cat-n::before { counter-increment: c; content: "0" counter(c); }
+        .cat-name { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 34px; font-weight: 500; line-height: 1.1; margin: 0 0 14px; }
+        .cat-more { display: inline-flex; align-items: center; gap: 12px; }
+        .cat-more::after { content: ""; width: 34px; height: 1px; background: currentColor; transition: width .35s; }
+        .cat:hover .cat-more::after { width: 58px; }
+        .cat.active { outline: 2px solid var(--mocha); outline-offset: 5px; }
 
-        /* Про Zolotaya */
-        .about { display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; align-items: center; }
-        .about-text p { color: var(--muted); font-size: 17px; line-height: 1.8; margin: 0 0 20px; }
-        .about-cards { display: grid; gap: 14px; }
-        .about-card { display: flex; gap: 18px; align-items: flex-start; background: #fff; border: 1px solid var(--sand); border-radius: 22px; padding: 22px 24px; transition: transform .3s, box-shadow .3s; }
-        .about-card:hover { transform: translateX(6px); box-shadow: 0 12px 30px rgba(30,42,74,.08); }
-        .about-card .k { flex: none; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 13px; letter-spacing: .06em; }
-        .about-card:nth-child(1) .k { background: var(--sage); } .about-card:nth-child(2) .k { background: var(--navy); } .about-card:nth-child(3) .k { background: var(--rose); }
-        .about-card h3 { margin: 0 0 4px; font-size: 16px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
-        .about-card p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+        /* Про мене */
+        .about-bg { background: linear-gradient(135deg, #F3DDD3 0%, var(--milk) 60%); margin-top: 90px; }
+        .about { display: grid; grid-template-columns: .85fr 1.15fr; gap: 90px; align-items: center; padding: 120px 0; }
+        .about-photo { position: relative; max-width: 440px; width: 100%; margin: 0 auto; }
+        .about-photo::before { content: ""; position: absolute; inset: 0; background: var(--blush); border-radius: 32px; transform: translate(-22px, 22px); }
+        .about-photo::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--mocha); border-radius: 32px; transform: translate(14px, -14px); }
+        .about-photo img.pic { position: relative; z-index: 1; display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: center top; border-radius: 32px; box-shadow: 0 26px 54px rgba(30,42,74,.16); }
+        .about-badge { position: absolute; z-index: 2; right: -28px; bottom: -28px; width: 104px; height: 104px; border-radius: 50%; background: #fff; padding: 6px; box-shadow: 0 14px 34px rgba(30,42,74,.2); }
+        .about-badge img { display: block; width: 100%; height: 100%; }
+        .about .label { color: var(--mocha); margin: 0 0 18px; }
+        .about h2 { font-size: clamp(32px, 3.8vw, 52px); font-weight: 500; line-height: 1.1; margin: 0 0 26px; }
+        .about h2 em { font-style: italic; color: var(--mocha); }
+        .about p { font-size: 17px; line-height: 1.85; color: var(--muted); margin: 0 0 20px; }
+        .pillars { display: flex; flex-wrap: wrap; gap: 14px 34px; margin: 28px 0 38px; color: var(--mocha-dark); }
 
         /* Як це працює */
-        .steps { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
-        .steps::before { content: ""; position: absolute; top: 52px; left: 8%; right: 8%; border-top: 1px dashed var(--mocha); opacity: .45; }
-        .step { position: relative; background: #fff; border-radius: 22px; padding: 28px 24px 26px; border-top: 5px solid var(--rose); box-shadow: 0 10px 28px rgba(30,42,74,.06); transition: transform .3s; }
+        .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+        .step { background: #fff; border-radius: 24px; padding: 30px 26px 28px; border-top: 5px solid var(--rose); box-shadow: 0 12px 30px rgba(30,42,74,.07); transition: transform .3s; }
         .step:hover { transform: translateY(-6px); }
         .s1 { border-top-color: var(--rose); background: linear-gradient(180deg, #FBEDE7, #fff 55%); }
         .s2 { border-top-color: var(--sand); background: linear-gradient(180deg, #F6ECDD, #fff 55%); }
         .s3 { border-top-color: var(--sage); background: linear-gradient(180deg, #EAF0E7, #fff 55%); }
         .s4 { border-top-color: var(--navy); background: linear-gradient(180deg, #E4E8F1, #fff 55%); }
-        .num { position: relative; width: 48px; height: 48px; border-radius: 50%; color: #fff; font-size: 21px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+        .num { width: 50px; height: 50px; border-radius: 50%; color: #fff; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
         .s1 .num { background: var(--rose); } .s2 .num { background: #C9A678; } .s3 .num { background: var(--sage); } .s4 .num { background: var(--navy); }
-        .step h3 { margin: 0 0 8px; font-size: 18px; font-weight: 500; letter-spacing: .05em; }
-        .step p { margin: 0; color: var(--muted); line-height: 1.65; font-size: 14.5px; }
-        .step .hint { display: inline-block; margin-top: 12px; font-family: 'Jost', sans-serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--mocha-dark); }
+        .step h3 { margin: 0 0 10px; font-size: 25px; font-weight: 600; }
+        .step p { margin: 0; color: var(--muted); line-height: 1.7; font-size: 15px; }
 
         /* Роботи */
-        .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
-        .card { background: #fff; border: 1px solid var(--sand); border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,42,74,.05); transition: transform .3s, box-shadow .3s; }
-        .card:nth-child(5n+1) { grid-column: span 2; }
-        .card:hover { transform: translateY(-6px); box-shadow: 0 20px 44px rgba(30,42,74,.14); }
-        .card-media { overflow: hidden; position: relative; }
-        .card-img { display: block; width: 100%; height: 340px; object-fit: cover; object-position: center top; background: var(--sand); transition: transform .9s cubic-bezier(.2, .7, .2, 1); }
-        img.card-img { cursor: zoom-in; }
-        .card:hover .card-img { transform: scale(1.06); }
-        .card-media::after { content: "Переглянути"; position: absolute; right: 16px; bottom: 16px; background: rgba(247,241,234,.92); color: var(--navy); font-family: 'Jost', sans-serif; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; padding: 8px 14px; border-radius: 999px; opacity: 0; transform: translateY(8px); transition: opacity .3s, transform .3s; pointer-events: none; }
-        .card:hover .card-media::after { opacity: 1; transform: none; }
-        .card-body { padding: 20px 22px 24px; }
-        .card h3 { margin: 0 0 8px; font-size: 19px; font-weight: 500; letter-spacing: .04em; }
-        .tag { color: var(--mocha); letter-spacing: .18em; text-transform: uppercase; font-size: 11px; font-weight: 500; }
-        .card p { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 12px 0 0; }
-        .more { margin-top: 34px; text-align: center; }
+        .works { padding: 110px 0 100px; }
+        .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+        .work { background: #fff; border-radius: 26px; overflow: hidden; border: 1px solid var(--sand); box-shadow: 0 12px 32px rgba(30,42,74,.06); transition: transform .35s, box-shadow .35s; }
+        .work:hover { transform: translateY(-6px); box-shadow: 0 22px 46px rgba(30,42,74,.14); }
+        .work-media { overflow: hidden; background: var(--sand); }
+        .work-img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: center top; transition: transform 1.2s cubic-bezier(.2,.7,.2,1); }
+        img.work-img { cursor: zoom-in; }
+        .work:hover .work-img { transform: scale(1.05); }
+        .work-body { padding: 20px 22px 26px; }
+        .work h3 { font-size: 26px; font-weight: 600; margin: 0 0 6px; }
+        .work .label { color: var(--mocha); font-size: 11px; }
+        .work p { margin: 12px 0 0; color: var(--muted); line-height: 1.65; font-size: 15px; }
+        .more { text-align: center; margin-top: 56px; }
+        .empty { color: var(--muted); }
 
         /* Питання */
-        .faq { max-width: 820px; }
-        details { background: #fff; border: 1px solid var(--sand); border-radius: 18px; padding: 0 26px; margin-bottom: 12px; transition: box-shadow .3s; }
-        details[open] { box-shadow: 0 10px 28px rgba(30,42,74,.07); }
-        summary { list-style: none; cursor: pointer; padding: 22px 0; font-size: 17px; letter-spacing: .03em; display: flex; justify-content: space-between; gap: 16px; }
+        .faq { max-width: 880px; padding-bottom: 100px; }
+        details { background: #fff; border: 1px solid var(--sand); border-radius: 20px; padding: 0 28px; margin-bottom: 12px; transition: box-shadow .3s; }
+        details[open] { box-shadow: 0 12px 30px rgba(30,42,74,.08); }
+        summary { list-style: none; cursor: pointer; padding: 24px 0; display: flex; justify-content: space-between; gap: 20px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 600; }
         summary::-webkit-details-marker { display: none; }
-        summary::after { content: "+"; flex: none; color: var(--mocha); font-size: 24px; line-height: 1; transition: transform .3s; }
+        summary::after { content: "+"; font-family: 'Jost', sans-serif; font-weight: 300; font-size: 28px; color: var(--mocha); transition: transform .3s; }
         details[open] summary::after { transform: rotate(45deg); }
-        details p { margin: 0 0 22px; color: var(--muted); line-height: 1.75; font-size: 15.5px; }
+        details p { margin: 0 0 24px; color: var(--muted); line-height: 1.8; max-width: 720px; }
 
-        /* Синій блок */
-        .cta { position: relative; overflow: hidden; background: linear-gradient(135deg, #1E2A4A, #34477A); color: #fff; border-radius: 32px; padding: 88px 24px; text-align: center; margin: 64px 0 24px; }
+        /* Синій баннер */
+        .cta { position: relative; overflow: hidden; background: linear-gradient(135deg, #1E2A4A, #34477A); color: #fff; border-radius: 34px; padding: 96px 24px; text-align: center; margin: 0 auto; }
         .cta::before, .cta::after { content: ""; position: absolute; border-radius: 50%; border: 1px solid rgba(230,213,190,.25); }
         .cta::before { width: 420px; height: 420px; left: -120px; top: -160px; }
         .cta::after { width: 320px; height: 320px; right: -80px; bottom: -140px; }
-        .cta h2 { position: relative; font-size: clamp(24px, 3.6vw, 40px); font-weight: 300; line-height: 1.25; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 16px; }
-        .cta p { position: relative; margin: 0 0 34px; font-size: 17px; line-height: 1.65; color: var(--sand); }
-        .cta .row { position: relative; display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
-        .cta .btn { background: var(--sand); color: var(--navy); box-shadow: none; }
-        .cta .btn:hover { background: #fff; }
-        .cta .btn-ghost { background: transparent; color: var(--sand); border: 1px solid var(--sand); }
-        .cta .btn-ghost:hover { background: var(--sand); color: var(--navy); }
+        .cta .label { position: relative; color: var(--sand); margin: 0 0 20px; }
+        .cta h2 { position: relative; font-size: clamp(32px, 5vw, 58px); font-weight: 500; line-height: 1.1; margin: 0 0 18px; }
+        .cta h2 em { font-style: italic; color: var(--blush); }
+        .cta p { position: relative; margin: 0 0 34px; font-size: 18px; color: var(--sand); }
+        .cta .btn { position: relative; background: var(--sand); color: var(--navy); border-color: var(--sand); }
+        .cta .btn:hover { background: #fff; border-color: #fff; }
 
         /* Контакти */
-        .contacts-block { background: linear-gradient(135deg, #9C7A6B, #B58F80); color: #fff; border-radius: 32px; padding: 24px 44px 54px; margin: 24px 0 0; }
-        .contacts-block .title::after { background: var(--blush); }
-        .contacts-block .sub { color: #F6E9E0; }
-        .contacts { display: flex; flex-wrap: wrap; gap: 14px; }
-        .contact { display: inline-block; padding: 14px 26px; border: 1px solid var(--blush); border-radius: 999px; font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; transition: background .2s, color .2s, transform .2s; }
-        .contact:hover { background: var(--milk); color: var(--mocha-dark); transform: translateY(-3px); }
+        .contacts-block { background: linear-gradient(135deg, #9C7A6B, #B58F80); color: #fff; border-radius: 34px; padding: 64px 48px 70px; margin: 24px auto 0; text-align: center; }
+        .contacts-block .label { color: var(--blush); margin: 0 0 16px; }
+        .contacts-block h2 { font-size: clamp(30px, 3.6vw, 46px); font-weight: 500; margin: 0 0 36px; }
+        .contact-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+        .contacts-block .btn { color: #fff; border-color: var(--blush); }
+        .contacts-block .btn:hover { background: var(--milk); color: var(--mocha-dark); border-color: var(--milk); }
 
         /* Підвал */
-        footer { background: var(--choc); color: var(--sand); margin-top: 72px; padding: 64px 0 34px; }
-        .foot { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 40px; align-items: start; }
-        .foot-logo { display: block; width: 110px; height: 110px; margin-bottom: 16px; }
-        footer .slogan { font-family: 'Jost', sans-serif; font-size: 12px; letter-spacing: .3em; color: var(--blush); opacity: .85; }
-        .foot h4 { margin: 0 0 16px; font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--rose); }
-        .foot a { display: block; padding: 6px 0; color: var(--sand); font-size: 15px; opacity: .88; transition: opacity .2s, transform .2s; }
-        .foot a:hover { opacity: 1; transform: translateX(4px); }
-        .copy { margin-top: 44px; padding-top: 22px; border-top: 1px solid rgba(230,213,190,.18); text-align: center; font-size: 12px; letter-spacing: .12em; opacity: .65; }
+        .strip { display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 90px; }
+        .strip img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+        footer { background: var(--choc); color: var(--sand); text-align: center; padding: 60px 24px 40px; }
+        footer img { width: 96px; height: 96px; margin-bottom: 16px; }
+        .foot-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 34px; margin: 26px 0 30px; font-size: 12px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; }
+        .foot-links a { opacity: .85; transition: opacity .2s; }
+        .foot-links a:hover { opacity: 1; }
+        .copy { font-size: 11px; letter-spacing: .2em; opacity: .55; }
         .mobile-cta { display: none; }
 
-        /* Анімація появи */
-        .reveal { opacity: 0; transform: translateY(28px); transition: opacity .9s ease, transform .9s ease; }
+        /* Поява */
+        .reveal { opacity: 0; transform: translateY(32px); transition: opacity 1s ease, transform 1s ease; }
         .reveal.in { opacity: 1; transform: none; }
 
         /* Перегляд фото */
-        .lightbox { position: fixed; inset: 0; z-index: 300; background: rgba(30,42,74,.95); display: none; align-items: center; justify-content: center; padding: 24px; }
+        .lightbox { position: fixed; inset: 0; z-index: 300; background: rgba(20,24,40,.96); display: none; align-items: center; justify-content: center; padding: 24px; }
         .lightbox.open { display: flex; }
-        .lightbox img { max-width: 92vw; max-height: 84vh; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
-        .lb-btn, .lb-close { position: absolute; width: 50px; height: 50px; border-radius: 50%; border: 1px solid rgba(230,213,190,.6); background: transparent; color: #E6D5BE; font-size: 24px; cursor: pointer; transition: background .2s; }
+        .lightbox img { max-width: 92vw; max-height: 84vh; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+        .lb-btn, .lb-close { position: absolute; width: 52px; height: 52px; border-radius: 50%; border: 1px solid rgba(230,213,190,.6); background: transparent; color: #E6D5BE; font-size: 24px; cursor: pointer; transition: background .2s; }
         .lb-btn:hover, .lb-close:hover { background: rgba(230,213,190,.15); }
-        .lb-btn { top: 50%; margin-top: -25px; }
+        .lb-btn { top: 50%; margin-top: -26px; }
         .lb-prev { left: 20px; } .lb-next { right: 20px; }
         .lb-close { top: 20px; right: 20px; }
-        .lb-cap { position: absolute; bottom: 22px; left: 0; right: 0; text-align: center; color: #E6D5BE; font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: .2em; text-transform: uppercase; }
-        @media (prefers-reduced-motion: reduce) {
-            .reveal { opacity: 1; transform: none; transition: none; }
-            .marquee-track, .float-card { animation: none; }
-        }
+        .lb-cap { position: absolute; bottom: 24px; left: 0; right: 0; text-align: center; color: #E6D5BE; font-size: 12px; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; }
+        @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } .hero-img { animation: none; transform: none; } .scroll { animation: none; } }
 
         /* Планшети */
         @media (max-width: 1000px) {
+            .about { grid-template-columns: 1fr; gap: 70px; padding: 90px 0; }
             .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .steps::before { display: none; }
-            .about { grid-template-columns: 1fr; gap: 28px; }
             .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .card:nth-child(5n+1) { grid-column: span 2; }
             .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .cat, .cat:nth-child(-n+2) { grid-column: span 1; min-height: 260px; }
-            .cat:nth-child(1) { grid-column: span 2; min-height: 320px; }
+            .cat, .cat:nth-child(n+4) { grid-column: span 1; aspect-ratio: 3 / 4; }
+            .strip { grid-template-columns: repeat(3, 1fr); }
+            .strip img:nth-child(n+4) { display: none; }
         }
         /* Телефони */
         @media (max-width: 800px) {
-            .container { padding-left: 20px; padding-right: 20px; }
-            .hero { grid-template-columns: 1fr; padding: 36px 0 72px; gap: 56px; }
-            .hero p.lead { font-size: 16px; }
-            .hero-photo { margin: 0 auto; max-width: 300px; }
-            .float-card { left: -14px; bottom: 28px; padding: 9px 14px 9px 9px; }
-            .float-card img { width: 38px; height: 38px; }
-            .brand span { font-size: 13px; letter-spacing: .3em; }
-            .brand img { height: 44px; width: 44px; }
+            .wrap { padding: 0 20px; }
+            .side.left { display: none; }
             .burger { display: block; }
-            .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 0; padding: 8px 20px 20px; background: rgba(247,241,234,.98); border-bottom: 1px solid var(--sand); box-shadow: 0 20px 30px rgba(30,42,74,.1); }
-            .topbar.open .nav-links { display: flex; }
-            .nav-links > a:not(.btn) { padding: 16px 0; border-bottom: 1px solid var(--sand); }
-            .nav-links .btn { margin-top: 16px; }
-            .title { font-size: 22px; }
-            .cats { gap: 12px; }
-            .cat, .cat:nth-child(-n+2) { min-height: 200px; padding: 18px 16px; border-radius: 22px; }
-            .cat:nth-child(1) { min-height: 240px; }
-            .cat-name { font-size: 15px; letter-spacing: .1em; }
-            .cat-count { font-size: 11px; }
-            .cat-ic { width: 38px; height: 38px; }
-            .cat-go { width: 38px; height: 38px; right: 14px; bottom: 14px; font-size: 17px; }
-            .cat-bottom { padding-right: 46px; }
+            .side.right a:not(.keep) { display: none; }
+            .brand img { width: 52px; height: 52px; }
+            .drawer { position: absolute; top: 100%; left: 0; right: 0; background: rgba(247,241,234,.98); border-bottom: 1px solid var(--sand); padding: 6px 24px 24px; flex-direction: column; color: var(--navy); }
+            .top.open .drawer { display: flex; }
+            .drawer a { padding: 18px 0; border-bottom: 1px solid var(--sand); font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 500; }
+            .hero-in { padding-bottom: 84px; }
+            .hero p.sub { font-size: 16px; }
+            .block { padding-top: 70px; }
+            .about-bg { margin-top: 60px; }
+            .about-photo::before { transform: translate(-12px, 12px); }
+            .about-photo::after { transform: translate(8px, -8px); }
+            .about-badge { right: -10px; bottom: -22px; width: 86px; height: 86px; }
+            .works { padding: 80px 0 70px; }
+            .cat { padding: 20px; border-radius: 22px; }
+            .cat-name { font-size: 24px; }
             .steps, .grid { grid-template-columns: 1fr; }
-            .card:nth-child(5n+1) { grid-column: auto; }
-            .card-img { height: 300px; }
-            .cta { padding: 64px 20px; margin-top: 48px; }
-            .contacts-block { padding: 12px 22px 40px; }
-            .foot { grid-template-columns: 1fr; gap: 28px; text-align: center; }
-            .foot-logo { margin-left: auto; margin-right: auto; }
+            .cats { gap: 12px; }
+            .cta { padding: 70px 20px; border-radius: 26px; }
+            .contacts-block { padding: 48px 22px 54px; border-radius: 26px; }
             .lb-prev { left: 8px; } .lb-next { right: 8px; }
-            body { padding-bottom: 84px; }
-            .mobile-cta { display: block; position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 40; }
+            .band { letter-spacing: .3em; font-size: 11px; }
+            body { padding-bottom: 76px; }
+            .mobile-cta { display: block; position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 90; background: var(--mocha); color: #fff; border-color: var(--mocha); box-shadow: 0 10px 26px rgba(156,122,107,.4); }
         }
         @media (max-width: 380px) {
             .hero-actions .btn { width: 100%; }
-            .brand span { display: none; }
         }
     </style>
 </head>
 <body>
 
-    <div id="progress"></div>
-
-    <!-- Іконки напрямів -->
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-        <symbol id="ic-kid" viewBox="0 0 48 48">
-            <ellipse cx="24" cy="18" rx="12" ry="14"/>
-            <path d="M24 32 l-3 4 h6z"/>
-            <path d="M24 36 q-5 3 0 6 q5 3 0 5"/>
-        </symbol>
-        <symbol id="ic-wed" viewBox="0 0 48 48">
-            <circle cx="17" cy="30" r="11"/><circle cx="31" cy="30" r="11"/>
-            <path d="M24 5 l4.5 5.5 L24 16 l-4.5-5.5z"/>
-        </symbol>
-        <symbol id="ic-ven" viewBox="0 0 48 48">
-            <path d="M6 17 L10 7 H38 L42 17"/>
-            <path d="M6 17 q4.5 8 9 0 q4.5 8 9 0 q4.5 8 9 0 q4.5 8 9 0"/>
-            <path d="M9 25 V41 H39 V25"/><rect x="20" y="30" width="8" height="11"/>
-        </symbol>
-        <symbol id="ic-hal" viewBox="0 0 48 48">
-            <ellipse cx="24" cy="30" rx="17" ry="12.5"/>
-            <path d="M24 17.5 q0-7 6-9"/>
-            <path d="M16 21 q-5 9 0 18 M32 21 q5 9 0 18 M24 18 V42"/>
-        </symbol>
-        <symbol id="ic-ny" viewBox="0 0 48 48">
-            <path d="M24 5 V43 M7.5 14.5 L40.5 33.5 M7.5 33.5 L40.5 14.5"/>
-            <path d="M19 9 L24 14 L29 9 M19 39 L24 34 L29 39"/>
-        </symbol>
-    </svg>
-
-    <header class="topbar" id="topbar">
-        <div class="container nav">
-            <a class="brand" href="/">
-                <img src="{% static 'portfolio/logo.png' %}" alt="Zolotaya">
-                <span>Zolotaya</span>
-            </a>
-            <nav class="nav-links" id="menu">
+    <header class="top" id="top">
+        <div class="wrap bar">
+            <button class="burger" id="burger" aria-expanded="false">Меню</button>
+            <nav class="side left">
                 <a href="#categories">Напрями</a>
                 <a href="#about">Про мене</a>
-                <a href="#how">Як це працює</a>
                 <a href="#works">Роботи</a>
-                <a href="#contacts">Контакти</a>
-                <a class="btn btn-small" href="{% url 'order_create' %}">Залишити заявку</a>
             </nav>
-            <button class="burger" id="burger" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
+            <a class="brand" href="/"><img src="{% static 'portfolio/logo.png' %}" alt="Zolotaya"></a>
+            <nav class="side right">
+                <a href="#how">Як це працює</a>
+                <a href="#contacts">Контакти</a>
+                <a class="keep" href="{% url 'order_create' %}">Заявка</a>
+            </nav>
         </div>
+        <nav class="drawer" id="drawer">
+            <a href="#categories">Напрями</a>
+            <a href="#about">Про мене</a>
+            <a href="#works">Роботи</a>
+            <a href="#how">Як це працює</a>
+            <a href="#contacts">Контакти</a>
+        </nav>
     </header>
 
-    <div class="hero-bg">
+    <section class="hero">
+        <img class="hero-img" src="{% if hero_work %}{{ hero_work.image.url }}{% else %}{% static 'portfolio/hero.jpg' %}{% endif %}" alt="Квіткове оформлення Zolotaya">
         <canvas id="petals" aria-hidden="true"></canvas>
-        <div class="container hero">
-            <div>
-                <p class="tagline">beauty in details</p>
-                <h1>Квіти та декор для ваших <em>найважливіших</em> днів</h1>
-                <p class="lead">Весілля, оформлення закладів, Гелловін, Новий рік і дитячі майстер-класи. Розкажіть про свою подію, і я домовлюся з вами про деталі та вартість.</p>
-                <div class="hero-actions">
-                    <a class="btn" href="{% url 'order_create' %}">Залишити заявку</a>
-                    <a class="btn btn-ghost" href="#works">Дивитись роботи</a>
-                </div>
-            </div>
-            <div class="hero-photo" id="heroPhoto">
-                <img class="hero-img" src="{% static 'portfolio/hero.jpg' %}" alt="Квіткове оформлення Zolotaya">
-                <div class="float-card">
-                    <img src="{% static 'portfolio/logo.png' %}" alt="">
-                    <div><b>Zolotaya</b><small>квіти та декор</small></div>
-                </div>
+        <div class="hero-in">
+            <p class="label">beauty in details</p>
+            <h1>Квіти та декор для ваших <em>найважливіших</em> днів</h1>
+            <p class="sub">Весілля, оформлення закладів, Гелловін, Новий рік і дитячі майстер-класи.</p>
+            <div class="hero-actions">
+                <a class="btn btn-solid" href="{% url 'order_create' %}">Залишити заявку</a>
+                <a class="btn btn-light" href="#works">Дивитись роботи</a>
             </div>
         </div>
-    </div>
+        <span class="scroll" aria-hidden="true"></span>
+    </section>
 
-    <div class="marquee" aria-hidden="true">
-        <div class="marquee-track">
-            <div class="mq"><span>Весілля</span><i>✦</i><span>Оформлення закладів</span><i>✦</i><span>Гелловін</span><i>✦</i><span>Новий рік</span><i>✦</i><span>Дитячі майстер-класи</span><i>✦</i><span>Natural · Modern · You</span><i>✦</i></div>
-            <div class="mq"><span>Весілля</span><i>✦</i><span>Оформлення закладів</span><i>✦</i><span>Гелловін</span><i>✦</i><span>Новий рік</span><i>✦</i><span>Дитячі майстер-класи</span><i>✦</i><span>Natural · Modern · You</span><i>✦</i></div>
+    <div class="band"><span>Natural</span><i>✦</i><span>Modern</span><i>✦</i><span>You</span></div>
+
+    <section id="categories" class="wrap block">
+        <div class="head reveal">
+            <p class="label">Напрями</p>
+            <h2>Що я оформлюю</h2>
+            <p class="note">Оберіть напрям, щоб побачити роботи саме з цієї категорії.</p>
         </div>
+        <div class="cats">
+            {% for category in categories %}
+                <a class="cat reveal {% if 'Весіл' in category.name %}c-wed{% elif 'закл' in category.name %}c-ven{% elif 'Гел' in category.name %}c-hal{% elif 'Нов' in category.name %}c-ny{% elif 'майстер' in category.name %}c-kid{% else %}c-def{% endif %}{% if current.id == category.id %} active{% endif %}" href="{% url 'category' category.id %}#works">
+                    {% with cover=category.works.all.0 %}
+                        {% if cover.image %}<img class="cat-bg" src="{{ cover.image.url }}" alt="" loading="lazy">{% endif %}
+                    {% endwith %}
+                    <span class="label cat-n"></span>
+                    <span class="cat-name">{{ category.name }}</span>
+                    <span class="label cat-more">Переглянути роботи</span>
+                </a>
+            {% empty %}
+                <p class="empty">Категорії незабаром з’являться.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <div class="about-bg">
+        <section id="about" class="wrap about">
+            <div class="about-photo reveal">
+                <img class="pic" src="{% static 'portfolio/hero.jpg' %}" alt="Засновниця Zolotaya" loading="lazy">
+                <div class="about-badge"><img src="{% static 'portfolio/logo.png' %}" alt="Zolotaya"></div>
+            </div>
+            <div class="reveal">
+                <p class="label">Про мене</p>
+                <h2>Квіти, у яких важлива <em>кожна деталь</em></h2>
+                <p>Я створюю квіткове оформлення та декор для подій: від весільної арки до вітрини закладу чи святкового столу для дітей.</p>
+                <p>Працюю з живими квітами й природними матеріалами та підбираю композицію під ваш простір, настрій і бюджет.</p>
+                <div class="pillars label"><span>Natural</span><span>Modern</span><span>You</span></div>
+                <a class="btn btn-solid" href="{% url 'order_create' %}">Обговорити мою подію</a>
+            </div>
+        </section>
     </div>
 
-    <div class="container">
+    <section id="how" class="wrap block" style="padding-top:20px">
+        <div class="head reveal">
+            <p class="label">Процес</p>
+            <h2>Як це працює</h2>
+            <p class="note">Чотири кроки від першої ідеї до готового декору. Ви завжди знаєте, що відбувається далі.</p>
+        </div>
+        <div class="steps">
+            <div class="step s1 reveal"><div class="num">1</div><h3>Залишаєте заявку</h3><p>Обираєте тип події, вказуєте дату та коротко описуєте побажання: стиль, кольори, місце.</p></div>
+            <div class="step s2 reveal"><div class="num">2</div><h3>Я зв’язуюся з вами</h3><p>Телефоном або в месенджері уточнюю деталі: локація, кількість гостей, настрій події.</p></div>
+            <div class="step s3 reveal"><div class="num">3</div><h3>Ідея та вартість</h3><p>Пропоную концепцію, палітру та орієнтовну вартість. Разом вирішуємо, що залишити, а що змінити.</p></div>
+            <div class="step s4 reveal"><div class="num">4</div><h3>Створюю декор</h3><p>Привожу та оформлюю все до вашої події, щоб вам залишалося лише насолоджуватись.</p></div>
+        </div>
+    </section>
 
-        <section id="categories">
-            <h2 class="title">Що я оформлюю</h2>
-            <p class="sub">Оберіть напрям, щоб побачити роботи саме з цієї категорії.</p>
-            <div class="cats">
-                {% for category in categories %}
-                    <a class="cat {% if 'Весіл' in category.name %}c-wed{% elif 'закл' in category.name %}c-ven{% elif 'Гел' in category.name %}c-hal{% elif 'Нов' in category.name %}c-ny{% elif 'майстер' in category.name %}c-kid{% else %}c-def{% endif %}{% if current.id == category.id %} active{% endif %}" href="{% url 'category' category.id %}#works">
-                        {% with cover=category.works.all.0 %}
-                            {% if cover.image %}<img class="cat-bg" src="{{ cover.image.url }}" alt="" loading="lazy">{% endif %}
-                        {% endwith %}
-                        <span class="cat-shade"></span>
-                        <span class="cat-top">
-                            <svg class="cat-ic i-wed" aria-hidden="true"><use href="#ic-wed"/></svg>
-                            <svg class="cat-ic i-ven" aria-hidden="true"><use href="#ic-ven"/></svg>
-                            <svg class="cat-ic i-hal" aria-hidden="true"><use href="#ic-hal"/></svg>
-                            <svg class="cat-ic i-ny" aria-hidden="true"><use href="#ic-ny"/></svg>
-                            <svg class="cat-ic i-kid" aria-hidden="true"><use href="#ic-kid"/></svg>
-                            <span class="cat-n"></span>
-                        </span>
-                        <span class="cat-bottom">
-                            <span class="cat-name">{{ category.name }}</span>
-                            <span class="cat-count">Робіт: {{ category.works.all|length }}</span>
-                        </span>
-                        <span class="cat-go">→</span>
-                    </a>
-                {% empty %}
-                    <p>Категорії незабаром з’являться.</p>
-                {% endfor %}
-            </div>
-        </section>
-
-        <section id="about">
-            <h2 class="title">Про Zolotaya</h2>
-            <div class="about">
-                <div class="about-text">
-                    <p>Я створюю квіткове оформлення та декор для подій, у яких важлива кожна деталь: від весільної арки до вітрини закладу чи святкового столу для дітей.</p>
-                    <p>Працюю з живими квітами й природними матеріалами та підбираю композицію під ваш простір, настрій і бюджет.</p>
-                    <a class="btn" href="{% url 'order_create' %}">Обговорити мою подію</a>
-                </div>
-                <div class="about-cards">
-                    <div class="about-card"><div class="k">01</div><div><h3>Natural</h3><p>Живі квіти та природні фактури, які однаково гарні наживо й на фото.</p></div></div>
-                    <div class="about-card"><div class="k">02</div><div><h3>Modern</h3><p>Чисті форми та продумана композиція замість перевантаженого декору.</p></div></div>
-                    <div class="about-card"><div class="k">03</div><div><h3>You</h3><p>Кожна подія особлива, тому декор створюється саме під вашу історію.</p></div></div>
-                </div>
-            </div>
-        </section>
-
-        <section id="how">
-            <h2 class="title">Як це працює</h2>
-            <p class="sub">Чотири кроки від першої ідеї до готового декору. Ви завжди знаєте, що відбувається далі.</p>
-            <div class="steps">
-                <div class="step s1">
-                    <div class="num">1</div>
-                    <h3>Залишаєте заявку</h3>
-                    <p>Обираєте тип події, вказуєте дату та коротко описуєте побажання: стиль, кольори, місце.</p>
-                    <span class="hint">Займає 1 хвилину</span>
-                </div>
-                <div class="step s2">
-                    <div class="num">2</div>
-                    <h3>Я зв’язуюся з вами</h3>
-                    <p>Телефоном або в месенджері уточнюю деталі: локація, кількість гостей, настрій події.</p>
-                    <span class="hint">Без зобов’язань</span>
-                </div>
-                <div class="step s3">
-                    <div class="num">3</div>
-                    <h3>Ідея та вартість</h3>
-                    <p>Пропоную концепцію, палітру та орієнтовну вартість. Разом вирішуємо, що залишити, а що змінити.</p>
-                    <span class="hint">Спільно з вами</span>
-                </div>
-                <div class="step s4">
-                    <div class="num">4</div>
-                    <h3>Створюю декор</h3>
-                    <p>Привожу та оформлюю все до вашої події, щоб вам залишалося лише насолоджуватись.</p>
-                    <span class="hint">Все під ключ</span>
-                </div>
-            </div>
-        </section>
-
-        <section id="works">
-            <h2 class="title">Наші роботи</h2>
-            <p class="sub">
+    <section id="works" class="wrap works">
+        <div class="head reveal">
+            <p class="label">{% if current %}{{ current.name }}{% else %}Портфоліо{% endif %}</p>
+            <h2>Наші роботи</h2>
+            <p class="note">
                 {% if current %}
-                    Категорія: {{ current.name }} ·
-                    <a href="{% url 'home' %}#works" style="color: var(--mocha); text-decoration: underline;">Показати всі роботи</a>
+                    <a href="{% url 'home' %}#works" style="color: var(--mocha); border-bottom: 1px solid var(--mocha);">Показати всі роботи</a>
                 {% else %}
                     Приклади оформлення, які вже зроблені. Натисніть на фото, щоб розглянути детальніше.
                 {% endif %}
             </p>
-            <div class="grid">
-                {% for work in works %}
-                    <div class="card">
-                        <div class="card-media">
-                            {% if work.image %}
-                                <img class="card-img" src="{{ work.image.url }}" alt="{{ work.title }}" loading="lazy">
-                            {% else %}
-                                <div class="card-img"></div>
-                            {% endif %}
-                        </div>
-                        <div class="card-body">
-                            <h3>{{ work.title }}</h3>
-                            <span class="tag">{{ work.category.name }}</span>
-                            <p>{{ work.description }}</p>
-                        </div>
+        </div>
+        <div class="grid">
+            {% for work in works %}
+                <div class="work reveal">
+                    <div class="work-media">
+                        {% if work.image %}
+                            <img class="work-img" src="{{ work.image.url }}" alt="{{ work.title }}" loading="lazy">
+                        {% else %}
+                            <div class="work-img"></div>
+                        {% endif %}
                     </div>
-                {% empty %}
-                    <p>Робіт поки немає.</p>
-                {% endfor %}
-            </div>
-            <p class="more">
-                <a class="btn btn-ghost" href="https://www.instagram.com/zolotaya.kh.ua" target="_blank" rel="noopener">Більше робіт і відео в Instagram</a>
-            </p>
-        </section>
+                    <div class="work-body">
+                        <h3>{{ work.title }}</h3>
+                        <span class="label">{{ work.category.name }}</span>
+                        {% if work.description %}<p>{{ work.description }}</p>{% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="empty">Робіт поки немає.</p>
+            {% endfor %}
+        </div>
+        <p class="more">
+            <a class="btn btn-dark" href="https://www.instagram.com/zolotaya.kh.ua" target="_blank" rel="noopener">Більше робіт і відео в Instagram</a>
+        </p>
+    </section>
 
-        <section id="faq">
-            <h2 class="title">Часті питання</h2>
-            <div class="faq">
-                <details>
-                    <summary>Скільки коштує оформлення?</summary>
-                    <p>Вартість залежить від типу події, масштабу, кількості та складності композицій. Після вашої заявки я уточню деталі та назву орієнтовну вартість, до цього жодних зобов’язань.</p>
-                </details>
-                <details>
-                    <summary>Коли краще залишати заявку?</summary>
-                    <p>Чим раніше, тим краще: так ми встигнемо спокійно обговорити ідею, підібрати квіти та матеріали. Якщо подія вже зовсім скоро, все одно напишіть, і я перевірю, чи вдасться допомогти.</p>
-                </details>
-                <details>
-                    <summary>Що вказати в заявці?</summary>
-                    <p>Тип події, бажану дату та кілька слів про побажання: стиль, кольори, місце проведення. Якщо є приклади, які вам подобаються, надішліть їх у месенджері після нашої розмови.</p>
-                </details>
-            </div>
-        </section>
+    <section class="wrap faq">
+        <div class="head reveal">
+            <p class="label">Питання</p>
+            <h2>Часті питання</h2>
+        </div>
+        <details class="reveal">
+            <summary>Скільки коштує оформлення?</summary>
+            <p>Вартість залежить від типу події, масштабу, кількості та складності композицій. Після вашої заявки я уточню деталі та назву орієнтовну вартість, до цього жодних зобов’язань.</p>
+        </details>
+        <details class="reveal">
+            <summary>Коли краще залишати заявку?</summary>
+            <p>Чим раніше, тим краще: так ми встигнемо спокійно обговорити ідею, підібрати квіти та матеріали. Якщо подія вже зовсім скоро, все одно напишіть, і я перевірю, чи вдасться допомогти.</p>
+        </details>
+        <details class="reveal">
+            <summary>Що вказати в заявці?</summary>
+            <p>Тип події, бажану дату та кілька слів про побажання: стиль, кольори, місце проведення. Якщо є приклади, які вам подобаються, надішліть їх у месенджері після нашої розмови.</p>
+        </details>
+    </section>
 
-        <section class="cta">
-            <h2>Розкажіть про свою подію</h2>
+    <div class="wrap">
+        <section class="cta reveal">
+            <p class="label">Zolotaya</p>
+            <h2>Розкажіть про свою <em>подію</em></h2>
             <p>Вкажіть дату, тип події та побажання, і я з вами зв’яжуся.</p>
-            <div class="row">
-                <a class="btn" href="{% url 'order_create' %}">Залишити заявку</a>
-                <a class="btn btn-ghost" href="https://t.me/AlinaChechina" target="_blank" rel="noopener">Написати в Telegram</a>
-            </div>
+            <a class="btn" href="{% url 'order_create' %}">Залишити заявку</a>
         </section>
 
-        <section id="contacts" class="contacts-block">
-            <h2 class="title">Контакти</h2>
-            <p class="sub">Напишіть мені зручним для вас способом.</p>
-            <div class="contacts">
-                <a class="contact" href="tel:+380992002458">+38 (099) 200 24 58</a>
-                <a class="contact" href="https://www.instagram.com/zolotaya.kh.ua" target="_blank" rel="noopener">Instagram</a>
-                <a class="contact" href="https://t.me/AlinaChechina" target="_blank" rel="noopener">Telegram</a>
+        <section id="contacts" class="contacts-block reveal">
+            <p class="label">Контакти</p>
+            <h2>Напишіть мені зручним способом</h2>
+            <div class="contact-row">
+                <a class="btn" href="tel:+380992002458">+38 (099) 200 24 58</a>
+                <a class="btn" href="https://www.instagram.com/zolotaya.kh.ua" target="_blank" rel="noopener">Instagram</a>
+                <a class="btn" href="https://t.me/AlinaChechina" target="_blank" rel="noopener">Telegram</a>
             </div>
         </section>
+    </div>
 
+    <div class="strip">
+        {% for work in works|slice:":5" %}{% if work.image %}<img src="{{ work.image.url }}" alt="" loading="lazy">{% endif %}{% endfor %}
     </div>
 
     <footer>
-        <div class="container">
-            <div class="foot">
-                <div>
-                    <img class="foot-logo" src="{% static 'portfolio/logo.png' %}" alt="Zolotaya">
-                    <div class="slogan">beauty in details</div>
-                </div>
-                <div>
-                    <h4>Розділи</h4>
-                    <a href="#categories">Напрями</a>
-                    <a href="#how">Як це працює</a>
-                    <a href="#works">Роботи</a>
-                    <a href="{% url 'order_create' %}">Залишити заявку</a>
-                </div>
-                <div>
-                    <h4>Контакти</h4>
-                    <a href="tel:+380992002458">+38 (099) 200 24 58</a>
-                    <a href="https://www.instagram.com/zolotaya.kh.ua" target="_blank" rel="noopener">Instagram</a>
-                    <a href="https://t.me/AlinaChechina" target="_blank" rel="noopener">Telegram</a>
-                </div>
-            </div>
-            <div class="copy">ZOLOTAYA · КВІТИ ТА ДЕКОР</div>
+        <img src="{% static 'portfolio/logo.png' %}" alt="Zolotaya">
+        <div class="label">beauty in details</div>
+        <div class="foot-links">
+            <a href="#categories">Напрями</a>
+            <a href="#works">Роботи</a>
+            <a href="#how">Як це працює</a>
+            <a href="{% url 'order_create' %}">Залишити заявку</a>
         </div>
+        <div class="copy">ZOLOTAYA · КВІТИ ТА ДЕКОР</div>
     </footer>
 
     <a class="btn mobile-cta" href="{% url 'order_create' %}">Залишити заявку</a>
 
 <script>
 (function () {
-    var topbar = document.getElementById('topbar');
+    var top = document.getElementById('top');
     var burger = document.getElementById('burger');
-    var bar = document.getElementById('progress');
-    var photo = document.getElementById('heroPhoto');
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    /* Меню на телефоні */
-    burger.addEventListener('click', function () {
-        var open = topbar.classList.toggle('open');
-        burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-    document.querySelectorAll('#menu a').forEach(function (a) {
-        a.addEventListener('click', function () { topbar.classList.remove('open'); });
-    });
-
-    /* Прогрес, тінь шапки, легкий рух фото */
-    var tick = false;
     function onScroll() {
-        var y = window.scrollY || document.documentElement.scrollTop;
-        var h = document.documentElement.scrollHeight - window.innerHeight;
-        bar.style.width = (h > 0 ? (y / h) * 100 : 0) + '%';
-        topbar.classList.toggle('scrolled', y > 10);
-        if (photo && !reduce && y < 900 && window.innerWidth > 800) {
-            photo.style.transform = 'translateY(' + (y * 0.06) + 'px)';
-        }
-        tick = false;
+        top.classList.toggle('solid', (window.scrollY || document.documentElement.scrollTop) > 60);
     }
-    window.addEventListener('scroll', function () {
-        if (!tick) { tick = true; requestAnimationFrame(onScroll); }
-    }, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
-    /* Плавна поява блоків */
-    var items = document.querySelectorAll('.step, .card, .cat, .title, .sub, .cta, .contacts-block, .about-card, .about-text, details');
-    items.forEach(function (el) { el.classList.add('reveal'); });
+    burger.addEventListener('click', function () {
+        var open = top.classList.toggle('open');
+        burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        burger.textContent = open ? 'Закрити' : 'Меню';
+    });
+    document.querySelectorAll('#drawer a').forEach(function (a) {
+        a.addEventListener('click', function () {
+            top.classList.remove('open');
+            burger.textContent = 'Меню';
+        });
+    });
+
+    /* Поява блоків */
+    var items = document.querySelectorAll('.reveal');
     if ('IntersectionObserver' in window) {
         var io = new IntersectionObserver(function (entries) {
             entries.forEach(function (e) {
@@ -567,7 +465,7 @@
                     var el = e.target;
                     el.classList.add('in');
                     io.unobserve(el);
-                    setTimeout(function () { el.classList.remove('reveal', 'in'); }, 1000);
+                    setTimeout(function () { el.classList.remove('reveal', 'in'); }, 1100);
                 }
             });
         }, { threshold: 0.12 });
@@ -576,8 +474,8 @@
         items.forEach(function (el) { el.classList.remove('reveal'); });
     }
 
-    /* Перегляд фото на весь екран */
-    var imgs = [].slice.call(document.querySelectorAll('img.card-img'));
+    /* Перегляд фото */
+    var imgs = [].slice.call(document.querySelectorAll('img.work-img'));
     if (imgs.length) {
         var lb = document.createElement('div');
         lb.className = 'lightbox';
@@ -624,15 +522,15 @@
         var size = function () { W = cv.width = cv.offsetWidth; H = cv.height = cv.offsetHeight; };
         size();
         window.addEventListener('resize', size);
-        var cols = ['rgba(234,215,205,.9)', 'rgba(156,122,107,.35)', 'rgba(230,213,190,.85)'];
-        for (var i = 0; i < 18; i++) {
-            ps.push({ x: Math.random() * W, y: Math.random() * H, r: 5 + Math.random() * 7,
-                      s: 0.25 + Math.random() * 0.5, d: Math.random() * 6.28, c: cols[i % 3] });
+        var cols = ['rgba(255,255,255,.8)', 'rgba(234,215,205,.9)', 'rgba(217,167,154,.75)'];
+        for (var i = 0; i < 16; i++) {
+            ps.push({ x: Math.random() * W, y: Math.random() * H, r: 5 + Math.random() * 8,
+                      s: 0.3 + Math.random() * 0.6, d: Math.random() * 6.28, c: cols[i % 3] });
         }
         (function loop() {
             ctx.clearRect(0, 0, W, H);
             ps.forEach(function (p) {
-                p.y += p.s; p.d += 0.01; p.x += Math.sin(p.d) * 0.4;
+                p.y += p.s; p.d += 0.012; p.x += Math.sin(p.d) * 0.45;
                 if (p.y > H + 20) { p.y = -20; p.x = Math.random() * W; }
                 ctx.save();
                 ctx.translate(p.x, p.y);

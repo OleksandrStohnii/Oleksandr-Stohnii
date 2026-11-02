@@ -22,6 +22,11 @@ class Work(models.Model):
         verbose_name="Категорія",
     )
     image = models.ImageField("Фото", upload_to="works/", blank=True)
+    is_hero = models.BooleanField(
+        "Фото для головного екрану",
+        default=False,
+        help_text="Позначте роботу з квітами: її фото буде на першому екрані сайту.",
+    )
     created_at = models.DateTimeField("Дата додавання", auto_now_add=True)
 
     class Meta:

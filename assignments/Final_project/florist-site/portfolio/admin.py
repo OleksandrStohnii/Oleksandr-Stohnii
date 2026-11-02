@@ -10,6 +10,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Work)
 class WorkAdmin(admin.ModelAdmin):
-    list_display = ("title", "category", "created_at")
-    list_filter = ("category",)
+    list_display = ("title", "category", "is_hero", "created_at")
+    list_filter = ("category", "is_hero")
     search_fields = ("title",)
+    list_editable = ("is_hero",)
