@@ -424,6 +424,8 @@ def tools_chart(entries):
     fig = base_layout(fig, 70 + 42 * len(entries), "Час одного запиту (лог-шкала)",
                       log_x=True, x_title="мілісекунди")
     fig.update_layout(margin={"l": 10, "r": 80, "t": 50, "b": 10}, showlegend=False)
+    # base_layout ставить осі "linear" — назви інструментів на такій осі зникають
+    fig.update_yaxes(type="category", automargin=True)
     return fig
 
 

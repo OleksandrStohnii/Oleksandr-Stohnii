@@ -5,12 +5,18 @@
 застосунок зручно показувати на занятті з проєктора.
 
 ## Запуск
-
 ```bash
 pip install streamlit plotly numpy pandas sortedcontainers
+```
+
+```bash
 cd module_1/lessons/lesson_12_practicum_search/taxi_lab
+```
+
+```bash
 streamlit run app.py
 ```
+
 
 Браузер відкриє `http://localhost:8501`. Інтернет і файли даних не потрібні: дані генеруються з фіксованим `seed`.
 `numpy`, `pandas` і `sortedcontainers` необов'язкові — без них застосунок працює, лише не показує їхні рядки.
