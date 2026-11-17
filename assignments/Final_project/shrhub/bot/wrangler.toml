@@ -1,0 +1,36 @@
+# SHRhub — настройки для деплоя через wrangler (с ноутбука).
+# Нужно только если включаешь «комнаты звонков» (CallRoom) — для десятков тысяч
+# одновременных звонков. Без этого файла worker.js по-прежнему можно вставлять
+# в Cloudflare руками, звонки работают через базу.
+#
+# Перед первым деплоем впиши свои значения в строки с ВПИШИ.
+name = "ВПИШИ-имя-воркера-как-в-Cloudflare"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+# Переменные, заданные в панели Cloudflare (APP_URL, OWNER_ID и т. д.), не трогаем
+keep_vars = true
+
+# База D1 — та же, что подключена сейчас (Workers & Pages → D1 → твоя база)
+[[d1_databases]]
+binding = "DB"
+database_name = "ВПИШИ-имя-базы"
+database_id = "ВПИШИ-id-базы"
+
+# Хранилище фото и видео (R2 → Create bucket → shrhub-media)
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "shrhub-media"
+
+# Комнаты звонков
+[[durable_objects.bindings]]
+name = "CALLROOM"
+class_name = "CallRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["CallRoom"]
+
+# Напоминания, дни рождения и новости — раз в час, как сейчас
+[triggers]
+crons = ["0 * * * *"]

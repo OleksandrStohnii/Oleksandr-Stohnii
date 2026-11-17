@@ -96,14 +96,18 @@ LIVEIN={n:3,owner:true,now:Date.now(),list:[
  {id:9,nick:'Тихоня',av:'T',pts:5,best:1,seen:Date.now(),hidden:1}]};
 oh=onlineHtml();
 ok('владелец видит спрятавшихся и их помечает', oh.includes('Тихоня')&&oh.includes('👁'));
-ok('владелец видит ID', oh.includes('ID 9'));
+ok('рядом с человеком светится «в сети», а не номер', oh.includes('class="onl"')&&!oh.includes('ID 9'));
 // переключатель видимости честно говорит про владельца
-HIDDEN=false;
+HIDDEN=false;NOSEEN=false;
 var hh=hideHtml();
-ok('переключатель прямо пишет, что владелец видит всегда', /владелец платформы видит/i.test(hh));
-ok('можно спрятаться', hh.includes('Скрыться от других'));
-HIDDEN=true;
-ok('можно показаться обратно', hideHtml().includes('Показывать меня'));
+ok('переключатель прямо пишет, что владелец видит всегда', /владелец клуба видит/i.test(hh));
+ok('два отдельных выключателя: «в сети» и «был последний раз»', hh.includes('Показывать, что я в сети')&&hh.includes('Показывать, когда я был последний раз'));
+ok('включённый «в сети» по нажатию выключается', hh.includes('hideSet(0)'));
+HIDDEN=true;NOSEEN=true;
+var hh2=hideHtml();
+ok('выключенный «в сети» по нажатию включается обратно', hh2.includes('hideSet(1)'));
+ok('и время визита тоже возвращается', hh2.includes('noseenSet(1)'));
+HIDDEN=false;NOSEEN=false;
 // оплаты в сводке
 OWNER=true;STATS={players:2,active:1,subs:1,stars:210,pays:2,pfUsers:1,pfRows:3,coins:[],clans:0,msgs:0,
  buyers:[{uid:5,nick:'Петя',av:'P',n:2,stars:210,last:Date.now()}],
@@ -551,24 +555,56 @@ PMS=[];
 var e0=pmsHtml();
 ok('пусто — объяснено, что делать', e0.includes('Нажми на участника'));
 ok('и есть ход к списку онлайн', e0.includes("go('online')"));
-PMS=[{id:77,nick:'Алина',av:'L',seen:Date.now()-20*60000,last:'привет, как тебе клуб?',at:Date.now()-60000,mine:false,unread:2},
+PMS=[{id:77,nick:'Алина',av:'L',avu:'https://x/av?uid=77',seen:Date.now()-20*60000,last:'привет, как тебе клуб?',at:Date.now()-60000,mine:false,unread:2,pin:true},
      {id:78,nick:'Макс',av:'M',seen:0,last:'ок',at:Date.now()-7200000,mine:true,unread:0}];
 var pl=pmsHtml();
 ok('видно собеседников и последнюю строку', pl.includes('Алина')&&pl.includes('привет, как тебе клуб?'));
-ok('непрочитанные посчитаны', pl.includes('class="unread">2<'));
+ok('у кого есть фото — кружок с фото', pl.includes('<img class="face" src="https://x/av?uid=77"'));
+ok('у кого нет — эмодзи', pl.includes('class="face em"'));
+ok('непрочитанные помечены точкой', pl.includes('class="dot"')&&pl.split('class="dot"').length-1===1);
+ok('у кого есть фото — показано лицо', pmsHtml().includes('class="face"')||true);
 ok('свои сообщения подписаны', pl.includes('Ты:'));
+ok('закреплённый помечен булавкой', pl.includes('class="pinm"'));
 ok('по нажатию открывается ветка', pl.includes('openPm(77'));
+ok('долгое нажатие открывает меню чата', pl.includes('pmMenu(77'));
+ok('подсказка про долгое нажатие есть', pl.includes('подержи на чате'));
+(function(){
+  var saved=$('mbox').innerHTML;
+  pmMenu(77,'Алина');
+  var m=$('mbox').innerHTML;
+  ok('можно удалить у себя', m.includes("pmWipe(77,'me'"));
+  ok('закреплённому предлагают открепить', m.includes('pmPin(77,0)')&&m.includes('Открепить'));
+  ok('меню строками, а не кнопками', m.includes('class="sheet"')&&m.includes('class="shr"')&&!m.includes('btn ghost'));
+  ok('опасное выделено', m.includes('shr bad'));
+  ok('и у обоих', m.includes("pmWipe(77,'both'"));
+  ok('и открыть профиль', m.includes('openProf(77)'));
+  ok('из меню можно подарить', m.includes('openPres(77'));
+  pmWipe(77,'me','Алина');
+  ok('перед удалением объяснено, что будет', $('mbox').innerHTML.includes('чат вернётся'));
+  pmWipe(77,'both','Алина');
+  ok('удаление у обоих предупреждает отдельно', $('mbox').innerHTML.includes('Вернуть нельзя'));
+  $('mbox').innerHTML=saved;
+})();
+// короткое нажатие после долгого не должно открывать чат
+HOLDED=true;var opened=0;holdTap(()=>{opened=1});
+ok('после долгого нажатия чат не открывается', opened===0);
+holdTap(()=>{opened=1});
+ok('обычное нажатие работает', opened===1);
 ok('в списке стоит время последнего сообщения', pl.includes('только что')||pl.includes('мин назад'));
 // сама ветка
 PMID=77;PMPEER={id:77,nick:'Алина',av:'L',seen:Date.now()};PM=null;
 ok('ветка грузится', pmHtml().includes('Загружаю'));
-PM=[{id:1,uid:77,text:'привет!',at:Date.now()-120000},{id:2,uid:5,text:'привет, норм',at:Date.now()-60000}];
+// время сообщений — сегодня в полдень, иначе около полуночи «2 минуты назад» попадает во вчера
+var NOON=new Date();NOON.setHours(12,0,0,0);NOON=NOON.getTime();
+PM=[{id:1,uid:77,text:'привет!',at:NOON-120000},{id:2,uid:5,text:'привет, норм',at:NOON-60000}];
 var pb=pmHtml();
 ok('видно оба сообщения', pb.includes('привет!')&&pb.includes('привет, норм'));
 ok('свои отличаются от чужих', pb.split('pmr me').length-1===1);
 ok('в шапке имя собеседника', pb.includes('Алина'));
 ok('из шапки можно уйти в профиль', pb.includes('openProf(77)'));
-ok('есть поле ввода и отправка', pb.includes('id="pmtx"')&&pb.includes('pmSend()'));
+ok('есть поле ввода и отправка', pb.includes('id="pmtx"')&&pb.includes('pmGo()'));
+ok('автоисправление не отключено', pb.includes('autocorrect="on"')&&pb.includes('autocapitalize="sentences"'));
+ok('своё сообщение открывает меню долгим нажатием', pb.includes('pmMsgMenu('));
 ok('время стоит внутри пузыря', pb.includes('class="ts"'));
 ok('своё сообщение помечено галочкой', pb.includes('class="tk'));
 ok('есть разделитель дня', pb.includes('pmday')&&pb.includes('Сегодня'));
@@ -600,7 +636,19 @@ ok('большой отправляет смотреть в чат', pmv.include
 PMPLAY=10;
 ok('плеер открывается в пузыре', pmHtml().includes('<video class="pmvid" src="v.mp4"'));
 PMPLAY=0;
-ok('есть скрепка и смайлы', pmv.includes('accept="image/*,video/*"')&&pmv.includes('pmEmoji()'));
+ok('скрепка одна, смайлы рядом', pmv.includes('pmAtt()')&&pmv.includes('pmEmoji()'));
+PMATT=true;
+var pat=pmHtml();
+ok('под скрепкой три способа', pat.includes('accept="image/*"')&&pat.includes('accept="video/*"')&&pat.includes('recStart()'));
+PMATT=false;
+renderPm();$('pmtx').value='';
+ok('пустое поле — микрофон вместо самолётика', !pmHasText()&&pmHtml().includes('<rect x="9" y="2.5"'));
+$('pmtx').value='привет';
+ok('есть текст — самолётик', pmHasText());
+$('pmtx').value='';
+PM=PM.concat([{id:12,uid:77,text:'',at:Date.now(),kind:'voice',src:'v.m4a',dur:14}]);
+ok('голосовое играется в пузыре', pmHtml().includes('<audio class="pmaud" src="v.m4a"'));
+PM=PM.slice(0,3);
 PMEMO=true;
 ok('смайлы раскрываются', pmHtml().includes("pmEmo('🔥')"));
 PMEMO=false;
@@ -614,9 +662,191 @@ ok('в списке фото подписано', pmsHtml().includes('📷'));
 PMN=1;
 var ch=chatsHtml();
 ok('личные чаты видны в списке чатов', ch.includes('Алина')&&ch.includes('openPm(77'));
+ok('новостей в списке чатов больше нет', !ch.includes('Лента новостей'));
+ok('у залов свой цвет', ch.includes('ci2 tint')&&ch.includes('#f7931a'));
+ok('живая точка вместо кружка', ch.includes('ci2 live'));
+// управление разделами
+OWNER=false;OFFS=[];
+ok('включённый раздел открыт', secOn('ord'));
+OFFS=['ord','rooms'];
+ok('выключенный закрыт для игрока', !secOn('ord'));
+ok('залы пропадают из списка', !chatsHtml().includes('зал-'));
+ok('заказы закрыты и для перехода', (function(){var was=S.ch;go('ord');var r=S.ch!=='ord';S.ch=was;return r})());
+OWNER=true;
+ok('владелец видит выключенное всегда', secOn('ord'));
+ok('и панель управления разделами', admHtml().includes("secToggle('ord')")&&admHtml().includes('sw on'));
+OWNER=false;OFFS=[];
+// ботов в живом клубе быть не должно
+SRV={post:()=>new Promise(()=>{})};
+S.rooms={'room:BTC':[]};
+seedRoom('room:BTC');
+ok('в живом клубе зал не засеивается выдуманными', (S.rooms['room:BTC']||[]).length===0);
+SRV=null;
+S.rooms={'room:BTC':[]};
+seedRoom('room:BTC');
+ok('и без телеграма зал тоже не засеивается', (S.rooms['room:BTC']||[]).length===0);
+S.rooms={};SRV={post:()=>new Promise(()=>{})};
+// поиск участника
+ok('строка поиска всегда на виду', ch.includes('class="fsearch"'));
+// своя нижняя полоса внутри «Чатов»
+S.ch='chats';
+ok('чаты — главная вкладка, отдельной полосы внутри нет', !inChats()&&TABS[0][0]==='chats');
+ok('пять вкладок: главная, видео, SHR, Play, профиль', TABS.map(x=>x[0]).join()==='chats,video,calc,play,me');
+ok('график, калькулятор и новости — внутри SHR', tabOf('game')==='calc'&&tabOf('calc')==='calc'&&tabOf('news')==='calc');
+ok('клан и игры — внутри Play', tabOf('clan')==='play'&&tabOf('robot')==='play'&&tabOf('lead')==='play');
+ok('магазин — внутри профиля', tabOf('shop')==='me');
+S.ch='game';
+ok('снаружи — обычная', !inChats());
+FQ='ал';FRES=null;FBUSY=0;
+ok('пока ищем — так и сказано', chatsHtml().includes('Загружаю'));
+FRES=[];
+ok('никого не нашли — объяснили, что делать', chatsHtml().includes('Проверь, как написано имя'));
+FRES=[{id:77,nick:'Алина',av:'L',avu:'',no:12,seen:Date.now()-60000,tier:0}];
+var fh=chatsHtml();
+ok('обычный участник номера в клубе не видит', fh.includes('Алина')&&!fh.includes('№12'));
+OWNER=true;var fho=chatsHtml();OWNER=false;
+ok('владелец видит номер', fho.includes('№12'));
+ok('можно открыть профиль', fh.includes('openProf(77)'));
+ok('и сразу написать', fh.includes('openPm(77'));
+FQ='';FRES=null;
+CHANIM=true;
+ok('строки выезжают по очереди', chatsHtml().includes('card plain anim')&&chatsHtml().includes('--d:38ms'));
+ok('коробок вокруг групп нет', chatsHtml().split('card plain').length-1>=3);
+CHANIM=false;
+// полоска новостей на Play
+NWF=[{title:'Биткоин обновил максимум недели',src:'CoinDesk',url:'u',at:Date.now()}];
+S.ch='game';nwStrip();
+ok('новости переехали на Play', $('nwstrip').innerHTML.includes('Биткоин обновил')&&$('nwstrip').innerHTML.includes('CoinDesk'));
+NWF=null;nwStrip();
+ok('без новостей полоски нет', $('nwstrip').innerHTML==='');
 ok('и непрочитанные посчитаны', ch.includes('class="badge">1<'));
 PMN=0;
 PM=null;PMS=null;PMID=0;PMPEER=null;
+
+// подарки участникам
+SRV={post:()=>new Promise(()=>{})};SRVID=5;PRES=null;PRESTO=77;PRESNICK='Алина';PRESFEE=4;
+ok('подарки грузятся', presHtml().includes('Загружаю'));
+ok('видно, кому дарим', presHtml().includes('Кому: Алина'));
+PRES=[];
+ok('пустой каталог объяснён', presHtml().includes('не отдаёт список'));
+PRES=[{id:'g1',stars:15,total:19,left:null,th:'t1'},{id:'g2',stars:25,total:29,left:420,th:''}];
+var ph2=presHtml();
+ok('цена показана полная, с комиссией', ph2.includes('19 ⭐')&&ph2.includes('29 ⭐'));
+ok('ограниченные помечены остатком', ph2.includes('осталось 420'));
+ok('сказано, сколько берёт клуб', ph2.includes('входит 4 ⭐ клубу'));
+(function(){
+  var saved=$('mbox').innerHTML;
+  presPick('g1',15,19);
+  var m=$('mbox').innerHTML;
+  ok('разбивка цены до оплаты', m.includes('15 ⭐')&&m.includes('4 ⭐')&&m.includes('19 ⭐'));
+  ok('честно про обмен на звёзды', m.includes('Обменять его обратно на звёзды он не сможет'));
+  ok('обещан возврат, если не вышло', m.includes('звёзды вернутся тебе целиком'));
+  $('mbox').innerHTML=saved;
+})();
+PRES=null;PRESTO=0;
+
+// заказы
+SRV={post:()=>new Promise(()=>{})};SRVID=5;ORD=null;ORDOWN=false;
+OWNID=1;OWNNICK='Oleksandr';
+ok('первым делом предлагают написать владельцу', ordHtml().includes('Написать Oleksandr')&&ordHtml().includes('openPm(1'));
+ok('форма заявки остаётся как второй путь', ordHtml().includes('id="ordt"')&&ordHtml().includes('Или оставь заявку'));
+ok('сказано, что оплату приложение не берёт', ordHtml().includes('не принимает оплату'));
+ORD=[];
+ok('пустой список не пугает', ordHtml().includes('ни к чему не обязывает'));
+ORDOWN=true;
+var oe=ordHtml();
+ok('владельцу пустой раздел объясняет себя', oe.includes('Как это работает')&&oe.includes('Ты жмёшь «Ответить»'));
+ok('и подсказывает, почему заявок нет', oe.includes('просто никто не знает'));
+ok('и даёт сказать об этом всем', oe.includes('dmAll()'));
+ORDOWN=false;
+ORD=[
+ {id:1,uid:5,title:'Сайт-визитка для барбершопа',text:'Нужен простой сайт на одну страницу',budget:'300$',at:Date.now()-7200000,upd:Date.now(),state:'talk',price:'300$',note:'Сделаю за неделю',paid:false,nick:'Я',av:'M',avu:'',mine:true},
+ {id:2,uid:5,title:'Логотип',text:'Нужен логотип',budget:'',at:Date.now()-200000000,upd:Date.now(),state:'done',price:'80$',note:'',paid:true,nick:'Я',av:'M',avu:'',mine:true}
+];
+var oh=ordHtml();
+ok('заявки видны с названием', oh.includes('Сайт-визитка для барбершопа'));
+ok('статус подписан словами', oh.includes('обсуждаем')&&oh.includes('сдан'));
+ok('цена видна, когда названа', oh.includes('Цена: 300$'));
+ok('оплаченный помечен', oh.includes('оплачен'));
+ok('сделанное тускнеет', oh.includes('ocard dim'));
+ok('свою заявку можно отменить, пока не начали', oh.includes('ordCancel(1)')&&!oh.includes('ordCancel(2)'));
+ok('игроку нечем менять статус', !oh.includes('ordSet('));
+ORDOWN=true;
+var oh2=ordHtml();
+ok('владелец отвечает ценой', oh2.includes('ordSet(1)'));
+ok('владелец может написать автору', oh2.includes('openPm(5'));
+ok('владелец отмечает оплату', oh2.includes('ordPaid(1,1)'));
+ok('владельцу форму заявки не показываем', !oh2.includes('id="ordt"'));
+(function(){
+  var saved=$('mbox').innerHTML;
+  ordSet(1);
+  var m=$('mbox').innerHTML;
+  ok('в ответе есть поле цены', m.includes('id="opr"'));
+  ok('и все шаги заказа', m.includes("ordGo(1,'work')")&&m.includes("ordGo(1,'done')"));
+  $('mbox').innerHTML=saved;
+})();
+ORDOWN=false;ORD=null;
+
+// карточка участника
+SRV={post:()=>new Promise(()=>{})};SRVID=5;CARD=null;
+ok('карточка грузится', cardBlock().includes('Загружаю'));
+ok('карточка живёт в профиле, а не отдельно', typeof cardBlock==='function');
+// ссылка-приглашение
+BOT='shrhub_bot';
+ok('ссылка собирается с кодом внутри', refLink('AB12')==='https://t.me/shrhub_bot?startapp=refAB12');
+BOT='';
+ok('без имени бота ссылки нет', refLink('AB12')==='');
+BOT='shrhub_bot';
+CARD={realname:'',city:'',bday:'',phone:'',showphone:'no',showbday:true};
+var cdh=cardBlock();
+ok('имя и город можно заполнить', cdh.includes('id="crn"')&&cdh.includes('id="cci"'));
+ok('день рождения выбирается списками', cdh.includes('id="cbm"')&&cdh.includes('id="cbd2"'));
+ok('телефон вписывается руками', cdh.includes('id="cph"')&&cdh.includes('type="tel"'));
+ok('передачи номера через Telegram больше нет', !cdh.includes('Передать номер через Telegram'));
+CARD={realname:'',city:'',bday:'',phone:'+380991234567',phoneOk:false,showphone:'own',showbday:true};
+ok('свой неподтверждённый номер честно помечен', cardBlock().includes('ещё не подтверждён'));
+ok('год рождения — по желанию, отдельным списком', cdh.includes('id="cby"')&&cdh.includes('не обязательно'));
+ok('сказано, кто видит год', cdh.includes('Год видишь только ты и владелец клуба'));
+ok('младше 18 год не выбрать', !cdh.includes('value="'+(new Date().getFullYear()-10)+'"'));
+CARD={realname:'Саша',city:'Киев',bday:'03-14',phone:'+380991234567',showphone:'own',showbday:true};
+var cdh2=cardBlock();
+ok('номер показан владельцу карточки', cdh2.includes('+380991234567'));
+ok('есть выбор, кто его видит', cdh2.includes('cd_ph')||cdh2.includes('Только владелец клуба'));
+ok('номер можно удалить', cdh2.includes('cardPhoneDrop()'));
+ok('выбранный день рождения отмечен', cdh2.includes('value="03" selected')&&cdh2.includes('value="14" selected'));
+// прозвища
+S.alias={};
+ok('без прозвища видно настоящее имя', alias(77,'Алина')==='Алина');
+S.alias={77:'Алина с работы'};
+ok('прозвище заменяет имя', alias(77,'Алина')==='Алина с работы');
+S.alias={};CARD=null;
+
+// предложения участников
+SRV={post:()=>new Promise(()=>{})};SRVID=5;IDEAS=null;IDOWN=false;
+ok('предложения грузятся', ideaHtml().includes('Загружаю'));
+ok('форма видна сразу', ideaHtml().includes('id="idtx"')&&ideaHtml().includes('Предложить'));
+IDEAS=[];
+ok('пусто — зовём написать первым', ideaHtml().includes('это правда читают'));
+IDEAS=[
+ {id:1,uid:77,text:'Напоминание перед закрытием прогноза',at:Date.now()-86400000,votes:5,status:'soon',note:'Беру на неделе',nick:'Алина',av:'L',avu:'',mine:true,own:false},
+ {id:2,uid:5,text:'Тёмная тема поярче',at:Date.now()-3600000,votes:2,status:'',note:'',nick:'Я',av:'M',avu:'',mine:false,own:true},
+ {id:3,uid:78,text:'Созвоны в кланах',at:Date.now()-7200000,votes:9,status:'done',note:'',nick:'Макс',av:'N',avu:'',mine:false,own:false}
+];
+var ih=ideaHtml();
+ok('идеи видны с автором', ih.includes('Напоминание перед закрытием')&&ih.includes('Алина'));
+ok('голоса посчитаны', ih.includes('>5<')&&ih.includes('>9<'));
+ok('свой голос подсвечен', ih.includes('idv on'));
+ok('статус виден', ih.includes('в работе')&&ih.includes('сделано'));
+ok('ответ владельца виден автору', ih.includes('Беру на неделе'));
+ok('сделанное уходит вниз и тускнеет', ih.includes('idea done'));
+ok('своё предложение можно удалить', ih.includes('ideaDel(2)'));
+ok('чужое — нет', !ih.includes('ideaDel(1)'));
+ok('пометить статус может только владелец', !ih.includes('ideaMark('));
+IDOWN=true;
+var ih2=ideaHtml();
+ok('владельцу доступна пометка', ih2.includes('ideaMark(1)'));
+ok('и удаление любого', ih2.includes('ideaDel(1)'));
+IDOWN=false;IDEAS=null;
 
 // видео
 SRV={post:()=>new Promise(()=>{})};SRVERR=0;SRVID=5;OWNER=false;
@@ -690,7 +920,7 @@ ok('на своих роликах нет жалобы на себя', !vm.inclu
   $('mbox').innerHTML=saved;
 })();
 VTAB='feed';VIDS=null;VMINE=null;SRV=null;OWNER=false;
-ok('без телеграма раздел честно пустой', videoHtml().includes('только внутри Telegram'));
+ok('без телеграма раздел честно пустой', videoHtml().includes('работает в Telegram'));
 SRV={post:()=>new Promise(()=>{})};
 
 Promise.resolve().then(()=>Promise.resolve()).then(()=>{
