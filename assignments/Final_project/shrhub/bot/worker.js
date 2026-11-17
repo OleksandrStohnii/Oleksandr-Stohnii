@@ -23,7 +23,7 @@ const PRODUCTS = {
   // Места в клане складываются с теми, что уже есть. Чем больше пачка,
   // тем дешевле место: кто зовёт тысячу человек, платит не в десять раз
   // больше того, кто зовёт сотню.
-  cap100: { title: '+100 мест в клане', stars: 150, seats: 100 },
+  cap100: { title: '+100 мест в клане', stars: 400, seats: 100 },
   cap500: { title: '+500 мест в клане', stars: 500, seats: 500 },
   cap1000: { title: '+1000 мест в клане', stars: 800, seats: 1000 },
   cap5000: { title: '+5000 мест в клане', stars: 2500, seats: 5000 },
@@ -39,6 +39,8 @@ const PRODUCTS = {
   felt: { title: 'Чёрно-золотое сукно', stars: 100, own: 'felt' },
   shovel: { title: 'Золотая лопата', stars: 50, own: 'shovel' },
   gm: { title: 'Золотое сообщение', stars: 25, gm: true },
+  // Большие звонки: в звонок можно звать до 8 человек вместо 5, на 30 дней
+  bigcall: { title: 'Большие звонки: до 8 человек, 30 дней', stars: 150, bigcall: true },
   // Голос в чате — одноразовая мелочь. Платят не за доступ к людям, а за то,
   // чтобы спамить стало дороже, чем оно того стоит: читать можно и без этого.
   chat: { title: 'Голос в чате, навсегда', stars: 1, chatOn: true },
@@ -363,6 +365,11 @@ export const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS cvotes(poll INTEGER, uid INTEGER, opt INTEGER, PRIMARY KEY(poll, uid))`,
   // Кого создатель клана выгнал и не пускает обратно
   `CREATE TABLE IF NOT EXISTS cbans(clan INTEGER, uid INTEGER, at INTEGER, note TEXT, PRIMARY KEY(clan, uid))`,
+  // Обезличенная статистика разделов: сколько раз открыли и сколько секунд
+  // провели — по дням. Кто именно — не храним, только «был ли человек в
+  // разделе в этот день», чтобы посчитать число людей.
+  `CREATE TABLE IF NOT EXISTS usage(day TEXT, sec TEXT, opens INTEGER DEFAULT 0, secs INTEGER DEFAULT 0, PRIMARY KEY(day, sec))`,
+  `CREATE TABLE IF NOT EXISTS usage_u(day TEXT, sec TEXT, uid INTEGER, PRIMARY KEY(day, sec, uid))`,
   `CREATE TABLE IF NOT EXISTS vseen(vid INTEGER, uid INTEGER, liked INTEGER DEFAULT 0,
     PRIMARY KEY(vid, uid))`,
   // Подписки: односторонние, как в инстаграме. Взаимности не требуем — так проще
@@ -491,6 +498,8 @@ const PATCH = [
   'ALTER TABLE follows ADD COLUMN ok INTEGER DEFAULT 1',
   // Повторные «звонит» в чат бота, пока на звонок не ответили
   'ALTER TABLE cmem ADD COLUMN pings INTEGER DEFAULT 0',
+  'ALTER TABLE players ADD COLUMN bigcall INTEGER DEFAULT 0',
+  'ALTER TABLE calls ADD COLUMN max INTEGER DEFAULT 5',
   'ALTER TABLE cmem ADD COLUMN pingat INTEGER DEFAULT 0',
   'ALTER TABLE cmem ADD COLUMN extra TEXT',
   // Ник у каждого свой: nkey — ник без регистра и пробелов, по нему и сверяем
@@ -846,13 +855,28 @@ async function ringDone(env, cid, uid, text) {
     await tg(env, 'editMessageText', { chat_id: uid, message_id: m.msg, text });
   } catch (e) {}
 }
-const CALL_LIVE = 25000, CALL_RING = 60000, CALL_MAX = 5;
+// Сколько ждём человека, пропавшего из звонка (погас экран, свернул или
+// закрыл Telegram), прежде чем считать, что он ушёл
+const CALL_LIVE = 90000, CALL_RING = 60000, CALL_MAX = 5, CALL_BIG = 8;
+// Сколько человек может быть в звонке, который начинает или расширяет этот
+// участник: 5 бесплатно, 8 — с «Большими звонками», у владельца и тех, кому
+// он открыл полный доступ, тоже 8. Больше восьми телефоны напрямую не тянут:
+// каждый отправляет видео каждому, для большего нужен свой медиасервер.
+async function callCap(env, uid) {
+  if (Number(env.OWNER_ID) === uid) return CALL_BIG;
+  const p = await env.DB.prepare('SELECT COALESCE(bigcall,0) b FROM players WHERE id=?').bind(uid).first();
+  if (p && p.b > NOW()) return CALL_BIG;
+  if (await giftOn(env, uid)) return CALL_BIG;
+  const oa = await openAllUntil(env);
+  if (oa === -1 || oa > NOW()) return CALL_BIG;
+  return CALL_MAX;
+}
 async function callMembers(env, cid, origin) {
   const T = NOW();
   const r = await env.DB.prepare(`SELECT m.uid, m.state, m.at, m.seen, COALESCE(m.cam,1) cam, p.nick, p.av, p.avimg, p.avurl
     FROM cmem m LEFT JOIN players p ON p.id=m.uid WHERE m.call=?`).bind(cid).all();
   return (r.results || []).map((x) => ({
-    id: x.uid, nick: x.nick || '', av: x.av || '🎩', cam: x.cam ? 1 : 0, avu: avLink(origin, { id: x.uid, avimg: x.avimg, avurl: x.avurl }),
+    id: x.uid, at: x.at || 0, nick: x.nick || '', av: x.av || '🎩', cam: x.cam ? 1 : 0, avu: avLink(origin, { id: x.uid, avimg: x.avimg, avurl: x.avurl }),
     state: x.state === 'in' && x.seen > T - CALL_LIVE ? 'in'
       : x.state === 'ring' && x.at > T - CALL_RING ? 'ring' : x.state === 'no' ? 'no' : 'gone',
   }));
@@ -916,7 +940,7 @@ async function movePm(env) {
 const NOW = () => Date.now();
 // Версия сервера: приложение сверяет её со своей и подсказывает владельцу,
 // если на Cloudflare залит старый worker.js
-const SRV_VER = 20261120;
+const SRV_VER = 20261127;
 // Пробный доступ новичку
 const TRIAL_DAYS = 14, TRIAL_TIER = 5;
 // Рейтинг клуба. Его даёт сервер и только за то, что он сам видит:
@@ -1197,7 +1221,7 @@ export default {
     }
 
     // Общая часть для всех запросов из игры: разобрать тело и проверить подпись
-    const API = ['/invoice', '/support', '/me', '/vote', '/sent', '/chat', '/clans', '/top', '/pf', '/stats', '/owner', '/notif', '/pref', '/online', '/feed', '/dm', '/profile', '/follow', '/vids', '/vid', '/pm', '/pms', '/ideas', '/find', '/gifts', '/orders', '/card', '/call', '/stories', '/tags', '/nick'];
+    const API = ['/invoice', '/support', '/me', '/vote', '/sent', '/chat', '/clans', '/top', '/pf', '/stats', '/owner', '/notif', '/pref', '/online', '/feed', '/dm', '/profile', '/follow', '/vids', '/vid', '/pm', '/pms', '/ideas', '/find', '/gifts', '/orders', '/card', '/call', '/stories', '/tags', '/nick', '/track'];
     let body = null, user = null;
     if (req.method === 'POST' && API.includes(url.pathname)) {
       try { body = await req.json(); } catch (e) { return json({ error: 'bad request' }, 400, cors); }
@@ -1428,21 +1452,19 @@ export default {
       await env.DB.prepare('INSERT INTO tickets(uid,text,at,done) VALUES(?,?,?,0)')
         .bind(user.id, text, NOW()).run();
       await logEvent(env, user.id, 'help', text.slice(0, 40));
-      // Обращение кладём в личную переписку с владельцем: дальше это обычный
-      // разговор, а не письмо в пустоту. Владельцу приходит уведомление
-      // с кнопкой, которая открывает ту же ветку.
+      // Обращение кладём в «Письма» поддержки, а не в личку владельца:
+      // человек пишет «Поддержке SHRhub» и не видит, чей это аккаунт.
+      // Владельцу бот присылает уведомление, отвечает он из «Обращений».
       const own = Number(env.OWNER_ID) || 0;
       const me = await env.DB.prepare('SELECT nick FROM players WHERE id=?').bind(user.id).first();
       const who = (me && me.nick) || clean(user.first_name, 32);
-      if (own && own !== user.id) {
-        await pmPut(env, user.id, own, `🎧 ${text}`, who, url.origin);
-      }
+      await env.DB.prepare('INSERT INTO dms(uid,dir,text,at,seen) VALUES(?,?,?,?,1)').bind(user.id, 'out', `🎧 ${text}`, NOW()).run();
+      if (own && own !== user.id) await tellOwner(env, `🎧 Поддержка\nОт: ${who} (id ${user.id})\n\n${text}\n\nОтветить: панель владельца → Обращения.`);
       // Отдельный чат поддержки, если он заведён: туда уходит копия
       if (env.SUPPORT_CHAT_ID && String(env.SUPPORT_CHAT_ID) !== String(own)) {
         await tg(env, 'sendMessage', { chat_id: env.SUPPORT_CHAT_ID,
           text: `🎧 Поддержка\nОт: ${who} (id ${user.id})\n\n${text}` });
       }
-      if (!own) await tellOwner(env, `🎧 Поддержка\nОт: ${who} (id ${user.id})\n\n${text}`);
       return json({ ok: true }, 200, cors);
     }
 
@@ -1500,7 +1522,9 @@ export default {
         ver: SRV_VER, media: !!env.MEDIA, nickTaken, nickNow: nickTaken ? row.nick : '', turn: !!(env.TURN_KEY_ID && env.TURN_KEY_TOKEN),
         banned: !!row.banned, banNote: row.ban_note || '', dmNew: unread ? unread.n : 0, pmNew: pmn ? pmn.n : 0, following: foll ? foll.n : 0, reqN: freq ? freq.n : 0,
         // Кому писать по заказам: id владельца и его имя в клубе
-        ownerId: Number(env.OWNER_ID) || 0, ownerNick: await ownerNick(env),
+        // Кто владелец, участникам не сообщаем
+        bigcall: row.bigcall || 0, callCap: await callCap(env, user.id),
+        ownerId: own ? (Number(env.OWNER_ID) || 0) : 0, ownerNick: own ? await ownerNick(env) : '',
         bot: await botName(env), off: await sectionsOff(env),
         chatOk: !!row.chat_ok || own || !(await chatPaid(env)),
         sale: sale, ann: an ? { id: an.id, text: an.text, at: an.at } : null,
@@ -1517,7 +1541,9 @@ export default {
       if (text) {
         await env.DB.prepare('INSERT INTO dms(uid,dir,text,at,seen) VALUES(?,?,?,?,1)')
           .bind(user.id, 'out', text, NOW()).run();
-        await tellOwner(env, `✉️ ${row.nick || user.id} (id ${user.id})\n\n${text}`);
+        // Каждое письмо в поддержку видно и в «Обращениях» владельца
+        await env.DB.prepare('INSERT INTO tickets(uid,text,at,done) VALUES(?,?,?,0)').bind(user.id, text, NOW()).run();
+        await tellOwner(env, `🎧 Поддержка\nОт: ${row.nick || user.id} (id ${user.id})\n\n${text}\n\nОтветить: панель владельца → Обращения.`);
       }
       // Открыл переписку — значит прочитал
       await env.DB.prepare("UPDATE dms SET seen=1 WHERE uid=? AND dir='in'").bind(user.id).run();
@@ -1889,6 +1915,8 @@ export default {
         if (iid) await env.DB.prepare('INSERT OR IGNORE INTO ivotes(iid,uid) VALUES(?,?)').bind(iid, user.id).run();
         await addRep(env, user.id, 2);
         await tellOwner(env, `💡 Предложение от ${(me && me.nick) || 'участника'} (id ${user.id}):\n\n${text}`);
+      } else if (act === 'vote' && !own) {
+        // Предложения личные: участник видит только свои, голосовать не за что
       } else if (act === 'vote') {
         const iid = Number(body.id) || 0;
         if (!iid) return json({ error: 'id' }, 400, cors);
@@ -1930,8 +1958,9 @@ export default {
                 p.avimg, p.avurl,
                 (SELECT COUNT(*) FROM ivotes v WHERE v.iid=i.id AND v.uid=?) mine
            FROM ideas i LEFT JOIN players p ON p.id=i.uid
+          ${own ? '' : 'WHERE i.uid=?'}
           ORDER BY (i.status='done') ASC, i.votes DESC, i.id DESC LIMIT 60`)
-        .bind(user.id).all();
+        .bind(...(own ? [user.id] : [user.id, user.id])).all();
       const list = (r.results || []).map((x) => ({
         id: x.id, uid: x.uid, text: x.text, at: x.at, votes: x.votes | 0,
         status: x.status || '', note: x.note || '',
@@ -2207,8 +2236,9 @@ export default {
       }
       if (me && me.banned) return json({ error: 'banned' }, 403, cors);
       if (act === 'start') {
+        const cap = await callCap(env, user.id);
         const to = [...new Set((Array.isArray(body.to) ? body.to : [body.to]).map(Number))]
-          .filter((x) => x && x !== user.id).slice(0, CALL_MAX - 1);
+          .filter((x) => x && x !== user.id).slice(0, cap - 1);
         if (!to.length) return json({ error: 'who' }, 400, cors);
         const many = await env.DB.prepare('SELECT COUNT(*) n FROM calls WHERE host=? AND at>?').bind(user.id, T - 3600000).first();
         if (many && many.n >= 30) return json({ error: 'slow' }, 429, cors);
@@ -2217,7 +2247,7 @@ export default {
         if (!ok.length) return json({ error: 'nocall' }, 403, cors);
         const id = crypto.randomUUID().replace(/-/g, '').slice(0, 20);
         const video = body.video ? 1 : 0;
-        await env.DB.prepare('INSERT INTO calls(id,host,video,at) VALUES(?,?,?,?)').bind(id, user.id, video, T).run();
+        await env.DB.prepare('INSERT INTO calls(id,host,video,at,max) VALUES(?,?,?,?,?)').bind(id, user.id, video, T, cap).run();
         await env.DB.prepare("INSERT INTO cmem(call,uid,state,at,seen,cam) VALUES(?,?,'in',?,?,?)").bind(id, user.id, T, T, body.cam ? 1 : 0).run();
         for (const x of ok) {
           await env.DB.prepare("INSERT INTO cmem(call,uid,state,at,seen) VALUES(?,?,'ring',?,0)").bind(id, x, T).run();
@@ -2229,7 +2259,7 @@ export default {
           await env.DB.prepare('DELETE FROM cmem WHERE call IN (SELECT id FROM calls WHERE at<?)').bind(T - 7 * 86400000).run();
           await env.DB.prepare('DELETE FROM calls WHERE at<?').bind(T - 7 * 86400000).run();
         }
-        return json({ id, video: !!video, ice: await iceServers(env), skipped: to.length - ok.length, ws: !!env.CALLROOM,
+        return json({ id, video: !!video, max: cap, ice: await iceServers(env), skipped: to.length - ok.length, ws: !!env.CALLROOM,
           members: await callMembers(env, id, url.origin) }, 200, cors);
       }
       const c = cid ? await env.DB.prepare('SELECT * FROM calls WHERE id=?').bind(cid).first() : null;
@@ -2239,13 +2269,13 @@ export default {
       if (act === 'join') {
         if (c.ended) return json({ error: 'ended' }, 410, cors);
         const mem = await callMembers(env, cid, url.origin);
-        if (mem.filter((m) => m.state === 'in' && m.id !== user.id).length >= CALL_MAX) return json({ error: 'full' }, 409, cors);
+        if (mem.filter((m) => m.state === 'in' && m.id !== user.id).length >= (c.max || CALL_MAX)) return json({ error: 'full' }, 409, cors);
         await env.DB.prepare("UPDATE cmem SET state='in', at=?, seen=?, cam=? WHERE call=? AND uid=?").bind(T, T, body.cam ? 1 : 0, cid, user.id).run();
         await env.DB.prepare('DELETE FROM csig WHERE call=? AND dst=?').bind(cid, user.id).run();
         const host = (await env.DB.prepare('SELECT nick FROM players WHERE id=?').bind(c.host).first()) || {};
         await ringDone(env, cid, user.id, `📞 Звонок от ${host.nick || 'участника клуба'} — ты ответил(а)`);
         const last = await env.DB.prepare('SELECT COALESCE(MAX(id),0) n FROM csig').first();
-        return json({ id: cid, video: !!c.video, host: c.host, ice: await iceServers(env), after: last ? last.n : 0, ws: !!env.CALLROOM,
+        return json({ id: cid, video: !!c.video, host: c.host, max: c.max || CALL_MAX, ice: await iceServers(env), after: last ? last.n : 0, ws: !!env.CALLROOM,
           members: (await callMembers(env, cid, url.origin)) }, 200, cors);
       }
       if (act === 'no' || act === 'leave') {
@@ -2270,12 +2300,19 @@ export default {
         const x = Number(body.to) || 0;
         if (!x || x === user.id) return json({ error: 'who' }, 400, cors);
         const mem = await callMembers(env, cid, url.origin);
-        if (mem.filter((m) => m.state === 'in' || m.state === 'ring').length >= CALL_MAX) return json({ error: 'full' }, 409, cors);
+        let max = c.max || CALL_MAX;
+        const busy = mem.filter((m) => m.state === 'in' || m.state === 'ring').length;
+        if (busy >= max) {
+          // Звонок полон. Если у зовущего «Большие звонки» — расширяем звонок
+          const cap = await callCap(env, user.id);
+          if (cap > max) { max = cap; await env.DB.prepare('UPDATE calls SET max=? WHERE id=?').bind(max, cid).run(); }
+        }
+        if (busy >= max) return json({ error: 'full', max, need: max < CALL_BIG ? 'big' : '' }, 409, cors);
         if (!await callAllowed(env, x, user.id)) return json({ error: 'nocall' }, 403, cors);
         await env.DB.prepare(`INSERT INTO cmem(call,uid,state,at,seen) VALUES(?,?,'ring',?,0)
           ON CONFLICT(call,uid) DO UPDATE SET state='ring', at=?`).bind(cid, x, T, T).run();
         await ringNotify(env, x, myName, cid, c.video, url.origin);
-        return json({ ok: true, members: await callMembers(env, cid, url.origin) }, 200, cors);
+        return json({ ok: true, max, members: await callMembers(env, cid, url.origin) }, 200, cors);
       }
       // Камеру выключили или включили — остальные покажут аватар вместо картинки
       if (act === 'cam') {
@@ -2307,7 +2344,7 @@ export default {
         const s = await env.DB.prepare('SELECT id, src, kind, data FROM csig WHERE call=? AND dst=? AND id>? ORDER BY id LIMIT 20')
           .bind(cid, user.id, after).all();
         const ended = await callTidy(env, cid, url.origin);
-        return json({ ended, members: ended ? [] : await callMembers(env, cid, url.origin), sigs: s.results || [] }, 200, cors);
+        return json({ ended, max: c.max || CALL_MAX, members: ended ? [] : await callMembers(env, cid, url.origin), sigs: s.results || [] }, 200, cors);
       }
       return json({ error: 'act' }, 400, cors);
     }
@@ -2649,6 +2686,24 @@ export default {
     }
 
     // 7c. Сводка для владельца бота
+    // Время в разделах: приложение присылает пачку раз в минуту
+    if (body && url.pathname === '/track') {
+      const d = DAY(), src = body.s && typeof body.s === 'object' ? body.s : {};
+      const keys = Object.keys(src).filter((k) => /^[a-z_]{2,16}$/.test(k)).slice(0, 30);
+      const st = [];
+      for (const k of keys) {
+        const v = Array.isArray(src[k]) ? src[k] : [0, 0];
+        const o = Math.max(0, Math.min(50, v[0] | 0)), sc = Math.max(0, Math.min(900, v[1] | 0));
+        if (!o && !sc) continue;
+        st.push(env.DB.prepare('INSERT INTO usage(day,sec,opens,secs) VALUES(?,?,?,?) ON CONFLICT(day,sec) DO UPDATE SET opens=opens+excluded.opens, secs=secs+excluded.secs').bind(d, k, o, sc));
+        st.push(env.DB.prepare('INSERT OR IGNORE INTO usage_u(day,sec,uid) VALUES(?,?,?)').bind(d, k, user.id));
+      }
+      if (st.length) await env.DB.batch(st);
+      // Изредка чистим старые отметки «кто был»: суммы по дням остаются
+      if (Math.random() < 0.02) await env.DB.prepare('DELETE FROM usage_u WHERE day<?').bind(DAY(NOW() - 40 * 86400000)).run();
+      return json({ ok: true }, 200, cors);
+    }
+
     if (body && url.pathname === '/stats') {
       if (!isOwner(env, user)) return json({ error: 'forbidden' }, 403, cors);
       const p = await env.DB.prepare('SELECT COUNT(*) n, SUM(CASE WHEN seen>? THEN 1 ELSE 0 END) live, SUM(CASE WHEN tier_until>? THEN 1 ELSE 0 END) subs FROM players')
@@ -2683,10 +2738,20 @@ export default {
         .bind(yNow, yNow, yNow, yNow).all();
       const msgs = await env.DB.prepare('SELECT COUNT(*) n FROM msgs').first();
       const clans = await env.DB.prepare('SELECT COUNT(*) n FROM clans').first();
+      // Где проводят время: за сегодня, 7 и 30 дней
+      const usage = {};
+      for (const [k, days] of [['d1', 1], ['d7', 7], ['d30', 30]]) {
+        const from = DAY(NOW() - (days - 1) * 86400000);
+        const a = await env.DB.prepare('SELECT sec, SUM(opens) opens, SUM(secs) secs FROM usage WHERE day>=? GROUP BY sec').bind(from).all();
+        const u = await env.DB.prepare('SELECT sec, COUNT(DISTINCT uid) users FROM usage_u WHERE day>=? GROUP BY sec').bind(from).all();
+        const um = Object.fromEntries((u.results || []).map((x) => [x.sec, x.users]));
+        usage[k] = (a.results || []).map((x) => ({ sec: x.sec, opens: x.opens | 0, secs: x.secs | 0, users: um[x.sec] | 0 }))
+          .sort((x, y) => y.secs - x.secs);
+      }
       return json({ players: p.n, active: p.live, subs: p.subs, pfUsers: f.users, pfRows: f.rows, pfUsd: f.usd,
         coins: top.results || [], pays: pay.n, stars: pay.stars, msgs: msgs.n, clans: clans.n,
         buyers: byUser.results || [], lastPays: last.results || [],
-        events: ev.results || [], balance, ages: ag.results || [],
+        events: ev.results || [], balance, ages: ag.results || [], usage,
         titles: Object.fromEntries(Object.entries(PRODUCTS).map(([k, v]) => [k, v.title])) }, 200, cors);
     }
 
@@ -2725,7 +2790,7 @@ export default {
           .bind(uid, 'in', text, NOW()).run();
         await logEvent(env, uid, 'dm', text.slice(0, 40));
         const r = await tg(env, 'sendMessage', { chat_id: uid,
-          text: `✉️ Сообщение от владельца SHRhub\n\n${text}\n\n— ответь прямо здесь или в приложении, я прочитаю.` });
+          text: `✉️ Поддержка SHRhub\n\n${text}\n\n— ответить можно в приложении: Hub → Поддержка SHRhub.` });
         if (r && r.ok === false) return json({ ok: true, telegram: 'blocked' }, 200, cors);
         return json({ ok: true }, 200, cors);
       } else if (act === 'announce_all') {
@@ -3018,7 +3083,7 @@ export default {
         await tg(env, 'sendMessage', { chat_id: m.chat.id, text:
           'Вопрос по оплате в SHRhub.\n\n' +
           'Напиши одним сообщением: что купил, когда и сколько звёзд списалось. ' +
-          'Владелец клуба проверит платёж. Если покупка не выдалась, звёзды вернём полностью.\n\n' +
+          'Поддержка SHRhub проверит платёж. Если покупка не выдалась, звёзды вернём полностью.\n\n' +
           'Ответ придёт в приложении, в чате поддержки. Мы никогда не просим данные карты, коды из SMS или перевод денег.' });
         try {
           await tellOwner(env, `💳 /paysupport от ${clean(m.from && m.from.first_name, 32) || 'без имени'} (id ${m.from && m.from.id})`);
@@ -3424,5 +3489,8 @@ export async function grant(env, uid, product, arg, sp) {
     await env.DB.prepare('UPDATE players SET codes=codes+3 WHERE id=?').bind(uid).run();
   } else if (pr.gm) {
     await env.DB.prepare('UPDATE players SET gm=gm+1 WHERE id=?').bind(uid).run();
+  } else if (pr.bigcall) {
+    // Продлевается от конца текущего срока, если он ещё идёт
+    await env.DB.prepare('UPDATE players SET bigcall=MAX(COALESCE(bigcall,0),?)+? WHERE id=?').bind(NOW(), 30 * 86400000, uid).run();
   }
 }

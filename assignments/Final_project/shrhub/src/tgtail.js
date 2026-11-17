@@ -16,6 +16,11 @@ if(TG&&API){
     if(m)REFCODE=m[1].toUpperCase();
   }catch(e){}
   srvPull();srvClans('');srvTop();
+  // Личные переписки нужны сразу: Hub — первая страница, и список чатов
+  // на ней не должен ждать 30 секунд до первого обновления
+  try{pullPms()}catch(e){}
+  // Звонок, из которого вышли, закрыв Telegram, — предлагаем вернуться
+  setTimeout(()=>{try{if(!new URLSearchParams(location.search).get('call'))callResumeAsk()}catch(e){}},1500);
   // Кнопка «Ответить в SHRhub» в письме бота открывает приложение сразу в
   // нужной переписке: номер собеседника приходит в адресе.
   try{
@@ -43,9 +48,10 @@ if(TG&&API){
   }catch(e){}
   // Закрыли приложение посреди звонка — сразу говорим серверу, что ушли,
   // чтобы у собеседника звонок не висел
-  window.addEventListener('pagehide',()=>{
-    try{if(CALL&&CALL.id&&navigator.sendBeacon)navigator.sendBeacon(API+'/call',JSON.stringify({initData:TG.initData,act:'leave',id:CALL.id}))}catch(e){}
-  });
+  // Закрыли Telegram посреди звонка — трубку НЕ кладём: собеседник подождёт
+  // до полутора минут, а при следующем открытии приложение предложит
+  // вернуться в разговор. Положить трубку — только кнопкой «Завершить».
+  window.addEventListener('pagehide',()=>{try{callSave()}catch(e){}});
 }
 
 // Своя кнопка «назад» есть у окна Telegram — рядом с заголовком. Включаем её
@@ -75,6 +81,7 @@ function pay(product,ok,arg){
   w('buy',(o,id)=>{const it=ITEMS.find(x=>x.id===id),ok=it.ok?it.ok():true;if(ok!==true){toast(ok);return}id==='gift'?o(id):pay(id,()=>o(id))});
   w('buyItem',(o,x)=>pay(x,()=>o(x)));
   w('buyPass',o=>pay('pass',()=>o()));
+  w('bigBuy',o=>pay('bigcall',()=>o()));
   w('buyBanner',o=>{if(!S.clan){toast(t('need_clan'));return}pay('banner',()=>o())});
   w('buySkin',o=>pay('rbskin',()=>o()));
   w('buyFelt',o=>pay('felt',()=>o()));
@@ -114,8 +121,15 @@ function pay(product,ok,arg){
     // айфон разрешает воспроизведение со звуком только так.
     if(VNEED){
       VSTAGE='shrink';VUP=0;vidUpBar();
-      vidShrink(p=>{VUP=Math.round(p*100);vidUpBar()})
-        .then(b=>send(b,b.type))
+      vidShrink(p=>{VUP=Math.round(p*100);vidUpBar()},1)
+        .then(b=>{
+          // Без своего хранилища Telegram покажет только файл до 20 МБ —
+          // если вышло тяжелее, сжимаем ещё раз, мельче
+          if(b.size<=VDIRECT||SRVMEDIA)return b;
+          VSTAGE='shrink2';VUP=0;vidUpBar();
+          return vidShrink(p=>{VUP=Math.round(p*100);vidUpBar()},2).then(b2=>b2.size<b.size?b2:b);
+        })
+        .then(b=>{VSTAGE='';send(b,b.type)})
         .catch(e=>vidUpDone(e==='play'?'play':'shrink'));
     }else send(VFILE,VFILE.type);
   });

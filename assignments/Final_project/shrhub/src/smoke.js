@@ -100,7 +100,7 @@ ok('рядом с человеком светится «в сети», а не �
 // переключатель видимости честно говорит про владельца
 HIDDEN=false;NOSEEN=false;
 var hh=hideHtml();
-ok('переключатель прямо пишет, что владелец видит всегда', /владелец клуба видит/i.test(hh));
+ok('переключатель прямо пишет, что модерация видит всегда', /Модерация SHRhub видит/i.test(hh));
 ok('два отдельных выключателя: «в сети» и «был последний раз»', hh.includes('Показывать, что я в сети')&&hh.includes('Показывать, когда я был последний раз'));
 ok('включённый «в сети» по нажатию выключается', hh.includes('hideSet(0)'));
 HIDDEN=true;NOSEEN=true;
@@ -460,7 +460,7 @@ TKTS=[{id:1,uid:7,nick:'Аня',text:'Не открылась подписка',
 var th2=tickHtml();
 ok('обращения видны', th2.includes('Не открылась подписка')&&th2.includes('купи у меня'));
 ok('заблокированный помечен', th2.includes('🚫')&&th2.includes('✅'));
-ok('можно ответить письмом', th2.includes('openPm(7'));
+ok('ответ уходит от поддержки, не из личного аккаунта', th2.includes('tickReply(7')&&!th2.includes('openPm(7'));
 OWNER=false;
 ok('чужому обращения не видны', !tickHtml().includes('Не открылась'));
 TKTS=null;
@@ -517,7 +517,7 @@ ok('письма грузятся', dmHtml().includes('Загружаю'));
 DMS=[{id:1,dir:'in',text:'Привет, как тебе?',at:Date.now()-8*3600000},{id:2,dir:'out',text:'нормально',at:Date.now()}];
 var dh=dmHtml();
 ok('видно письмо владельца и свой ответ', dh.includes('Привет, как тебе?')&&dh.includes('нормально'));
-ok('подписано, кто написал', dh.includes('Владелец клуба')&&dh.includes('Ты'));
+ok('подписано, кто написал', dh.includes('Поддержка SHRhub')&&dh.includes('Ты'));
 ok('сказано, что письмо дождётся утра', /прочитаешь утром/.test(dh));
 DMS=[];
 ok('пустая переписка объясняет себя', dmHtml().includes('пока нет'));
@@ -691,10 +691,10 @@ ok('строка поиска всегда на виду', ch.includes('class="f
 // своя нижняя полоса внутри «Чатов»
 S.ch='chats';
 ok('чаты — главная вкладка, отдельной полосы внутри нет', !inChats()&&TABS[0][0]==='chats');
-ok('пять вкладок: главная, видео, SHR, Play, профиль', TABS.map(x=>x[0]).join()==='chats,video,calc,play,me');
+ok('пять вкладок: Hub, SHR, профиль, Play, Shop', TABS.map(x=>x[0]).join()==='chats,calc,me,play,shop');
 ok('график, калькулятор и новости — внутри SHR', tabOf('game')==='calc'&&tabOf('calc')==='calc'&&tabOf('news')==='calc');
 ok('клан и игры — внутри Play', tabOf('clan')==='play'&&tabOf('robot')==='play'&&tabOf('lead')==='play');
-ok('магазин — внутри профиля', tabOf('shop')==='me');
+ok('магазин — своя вкладка', tabOf('shop')==='shop');
 S.ch='game';
 ok('снаружи — обычная', !inChats());
 FQ='ал';FRES=null;FBUSY=0;
@@ -748,7 +748,7 @@ PRES=null;PRESTO=0;
 // заказы
 SRV={post:()=>new Promise(()=>{})};SRVID=5;ORD=null;ORDOWN=false;
 OWNID=1;OWNNICK='Oleksandr';
-ok('первым делом предлагают написать владельцу', ordHtml().includes('Написать Oleksandr')&&ordHtml().includes('openPm(1'));
+ok('предлагают написать в поддержку, владелец не раскрыт', ordHtml().includes('Написать в поддержку')&&!ordHtml().includes('Oleksandr'));
 ok('форма заявки остаётся как второй путь', ordHtml().includes('id="ordt"')&&ordHtml().includes('Или оставь заявку'));
 ok('сказано, что оплату приложение не берёт', ordHtml().includes('не принимает оплату'));
 ORD=[];
@@ -806,12 +806,12 @@ ok('передачи номера через Telegram больше нет', !cdh
 CARD={realname:'',city:'',bday:'',phone:'+380991234567',phoneOk:false,showphone:'own',showbday:true};
 ok('свой неподтверждённый номер честно помечен', cardBlock().includes('ещё не подтверждён'));
 ok('год рождения — по желанию, отдельным списком', cdh.includes('id="cby"')&&cdh.includes('не обязательно'));
-ok('сказано, кто видит год', cdh.includes('Год видишь только ты и владелец клуба'));
+ok('сказано, кто видит год', cdh.includes('Год видишь только ты'));
 ok('младше 18 год не выбрать', !cdh.includes('value="'+(new Date().getFullYear()-10)+'"'));
 CARD={realname:'Саша',city:'Киев',bday:'03-14',phone:'+380991234567',showphone:'own',showbday:true};
 var cdh2=cardBlock();
 ok('номер показан владельцу карточки', cdh2.includes('+380991234567'));
-ok('есть выбор, кто его видит', cdh2.includes('cd_ph')||cdh2.includes('Только владелец клуба'));
+ok('есть выбор, кто его видит', cdh2.includes('cd_ph')||cdh2.includes('Не видно другим'));
 ok('номер можно удалить', cdh2.includes('cardPhoneDrop()'));
 ok('выбранный день рождения отмечен', cdh2.includes('value="03" selected')&&cdh2.includes('value="14" selected'));
 // прозвища
@@ -832,7 +832,7 @@ IDEAS=[
  {id:2,uid:5,text:'Тёмная тема поярче',at:Date.now()-3600000,votes:2,status:'',note:'',nick:'Я',av:'M',avu:'',mine:false,own:true},
  {id:3,uid:78,text:'Созвоны в кланах',at:Date.now()-7200000,votes:9,status:'done',note:'',nick:'Макс',av:'N',avu:'',mine:false,own:false}
 ];
-var ih=ideaHtml();
+IDOWN=false;var ihp=ideaHtml();ok('участник не видит стрелок голосования', !ihp.includes('class="idv'));IDOWN=true;var ih=ideaHtml();
 ok('идеи видны с автором', ih.includes('Напоминание перед закрытием')&&ih.includes('Алина'));
 ok('голоса посчитаны', ih.includes('>5<')&&ih.includes('>9<'));
 ok('свой голос подсвечен', ih.includes('idv on'));
@@ -840,8 +840,8 @@ ok('статус виден', ih.includes('в работе')&&ih.includes('сд�
 ok('ответ владельца виден автору', ih.includes('Беру на неделе'));
 ok('сделанное уходит вниз и тускнеет', ih.includes('idea done'));
 ok('своё предложение можно удалить', ih.includes('ideaDel(2)'));
-ok('чужое — нет', !ih.includes('ideaDel(1)'));
-ok('пометить статус может только владелец', !ih.includes('ideaMark('));
+ok('чужое — нет', !ihp.includes('ideaDel(1)'));
+ok('пометить статус может только владелец', !ihp.includes('ideaMark('));
 IDOWN=true;
 var ih2=ideaHtml();
 ok('владельцу доступна пометка', ih2.includes('ideaMark(1)'));
