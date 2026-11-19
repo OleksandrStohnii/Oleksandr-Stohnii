@@ -19,6 +19,9 @@ if(TG&&API){
   // Личные переписки нужны сразу: Hub — первая страница, и список чатов
   // на ней не должен ждать 30 секунд до первого обновления
   try{pullPms()}catch(e){}
+  // Истории других людей тоже нужны сразу, а не после перехода на другую вкладку
+  try{storiesPull()}catch(e){}
+  setInterval(()=>{try{if(live()&&S.ch==='chats'&&!document.hidden)storiesPull()}catch(e){}},60000);
   // Звонок, из которого вышли, закрыв Telegram, — предлагаем вернуться
   setTimeout(()=>{try{if(!new URLSearchParams(location.search).get('call'))callResumeAsk()}catch(e){}},1500);
   // Кнопка «Ответить в SHRhub» в письме бота открывает приложение сразу в

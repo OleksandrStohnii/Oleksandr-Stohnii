@@ -663,8 +663,9 @@ PMN=1;
 var ch=chatsHtml();
 ok('личные чаты видны в списке чатов', ch.includes('Алина')&&ch.includes('openPm(77'));
 ok('новостей в списке чатов больше нет', !ch.includes('Лента новостей'));
-ok('у залов свой цвет', ch.includes('ci2 tint')&&ch.includes('#f7931a'));
-ok('живая точка вместо кружка', ch.includes('ci2 live'));
+ok('залов в Hub больше нет', !ch.includes('ci2 tint'));
+ok('поддержки, предложений и «Кто в игре» в Hub нет', !ch.includes("go('sup')")&&!ch.includes("go('idea')")&&!ch.includes("go('online')"));
+ok('клан и «Создать клан» остались под чатами', ch.indexOf('clanNewOpen()')>ch.indexOf('openPm(77'));
 // управление разделами
 OWNER=false;OFFS=[];
 ok('включённый раздел открыт', secOn('ord'));
@@ -710,8 +711,8 @@ ok('можно открыть профиль', fh.includes('openProf(77)'));
 ok('и сразу написать', fh.includes('openPm(77'));
 FQ='';FRES=null;
 CHANIM=true;
-ok('строки выезжают по очереди', chatsHtml().includes('card plain anim')&&chatsHtml().includes('--d:38ms'));
-ok('коробок вокруг групп нет', chatsHtml().split('card plain').length-1>=3);
+ok('строки выезжают по очереди', chatsHtml().includes('card plain anim')&&chatsHtml().includes('--d:'));
+ok('коробок вокруг групп нет', chatsHtml().split('card plain').length-1>=2);
 CHANIM=false;
 // полоска новостей на Play
 NWF=[{title:'Биткоин обновил максимум недели',src:'CoinDesk',url:'u',at:Date.now()}];
